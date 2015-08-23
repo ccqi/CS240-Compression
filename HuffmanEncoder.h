@@ -6,7 +6,13 @@
 
 typedef std::vector<bool> HuffmanCode;
 typedef std::map<char, HuffmanCode > HuffmanMap;
-
+struct Trie{
+    int freq;
+    char c;
+    bool isLeaf;
+    Trie * zero;
+    Trie * one;
+};
 
 class HuffmanEncoder : public Decorator
 {
@@ -15,23 +21,12 @@ class HuffmanEncoder : public Decorator
         virtual ~HuffmanEncoder();
         std::vector<bool> encode();
         virtual void print(std::ofstream&);
-
-        struct Trie{
-            int freq;
-            char c;
-            bool isLeaf;
-            Trie * zero;
-            Trie * one;
-        };
-        //TextComponent * getComponent();
-
     private:
-        std::map<char, int> frequencyTable_;
-        Trie * huffmanTrie_;
-        HuffmanMap huffmanCodes_;
         void getHuffmanCodes(Trie*, HuffmanCode&,HuffmanMap&);
         std::vector<bool> getDecode(std::vector<bool>);
+        void writeTrie(Trie*, std::vector<bool>&);
+        Trie * readTrie(std::vector<bool>::iterator&);
 
 };
-bool trieCompare(HuffmanEncoder::Trie*, HuffmanEncoder::Trie*);
+bool trieCompare(Trie*, Trie*);
 #endif // HUFFMANENCODER_H

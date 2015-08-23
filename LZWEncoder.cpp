@@ -105,9 +105,7 @@ void LZWEncoder::print(ofstream& os){
     BYTE * binary= getBytes(encoding_);
     int size = encoding_.size()/8;
 
-    if(os.is_open()){
-        os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
-    }
+    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
     os.close();
 
     cout<<endl<<"After LZW encoding:"<<endl;

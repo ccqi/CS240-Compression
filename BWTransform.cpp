@@ -69,11 +69,9 @@ void BWTransform::print(ofstream& os){
     cout<<"Length of bits: "<<encoding_.size()<<endl;
     string text = getString(encoding_);
 
-    if(os.is_open()){
-        cout<<text<<endl;
-        os<<text;
+    cout<<text<<endl;
+    os<<text;
 
-    }
 //    cout<<"New string: "<<text<<endl;
 //    cout<<"New binary: ";
 //    for(auto it = text.begin();it!=text.end();++it){

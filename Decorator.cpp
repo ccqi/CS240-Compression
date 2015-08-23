@@ -3,7 +3,7 @@
 using namespace std;
 
 Decorator::Decorator(TextComponent * component):component_(component){
-    encoding_ = component_->getEncoding();
+    //encoding_ = component_->getEncoding();
 }
 
 Decorator::~Decorator()

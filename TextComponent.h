@@ -30,6 +30,7 @@ class TextComponent
         virtual TextComponent * decode() = 0;
         virtual State getID() const = 0;
         void setEncoding(std::vector<bool>);
+        void setEncoding(std::string);
         std::vector<bool> getEncoding() const;
     protected:
         std::vector<bool> getBits(std::string);

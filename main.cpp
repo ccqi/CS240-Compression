@@ -56,15 +56,15 @@ int main(int argc, char * argv[]){
 
     //read from command line or input
     TextComponent * text;
+    vector<bool> whole_data;
+    string plainText;
     if(argc ==1){
-        string plainText;
+
         cout << "Please enter your string to be encoded: ";
         getline(cin,plainText);
         text = new PlainText(plainText);
     }
     else{
-
-        vector<bool> whole_data;
         ifstream file(argv[1], ios::binary);
         char buffer;
         while (file.read(&buffer,1)){
@@ -76,14 +76,27 @@ int main(int argc, char * argv[]){
         text = new PlainText(whole_data);
     }
 
-    //make output file
-    string filename ="output.bin";
 
-    if(argc == 3){
-        filename = argv[2];
+////    std::streambuf * buf;
+//    std::ofstream of;
+//
+//    if(argc == 3) {
+//        of.open(argv[2]);
+//        buf = of.rdbuf();
+//    }
+//    else {
+//        buf = std::cout.rdbuf();
+//    }
+
+    //make output file
+    std::ofstream myFile;
+
+    if(argc >= 3){
+        myFile.open(argv[2],ios::binary);
     }
-    ofstream myFile(filename,ios::binary);
-    //myFile.open(filename);
+    else{
+        myFile.open("output.bin",ios::binary);
+    }
     //text->print(myFile);
 
     //get input from command line
@@ -136,6 +149,12 @@ int main(int argc, char * argv[]){
 //                cin >> command2;
 //                State op2;
 //                op2 = convertState(command2);
+                if(argc==1){
+                    text->setEncoding(plainText);
+                }
+                else{
+                    text->setEncoding(whole_data);
+                }
                 text = text->decode();
                 text->print(myFile);
                 break;

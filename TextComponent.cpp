@@ -59,6 +59,9 @@ BYTE * TextComponent::getBytes(vector<bool> bits){
 void TextComponent::setEncoding(vector<bool> encoding){
     encoding_ = encoding;
 }
+void TextComponent::setEncoding(string encoding){
+    encoding_ = getBits(encoding);
+}
 vector<bool> TextComponent::getEncoding() const{
     return encoding_;
 }
