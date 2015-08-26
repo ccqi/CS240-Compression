@@ -23,9 +23,7 @@ class Decorator : public TextComponent
         virtual std::vector<bool> encode();
         virtual void print(std::ofstream&);
         virtual TextComponent * decode();
-        //TextComponent * getComponent() const;
         State getID() const;
-        //virtual std::vector<bool> decode();
     private:
         TextComponent * component_;
         //void recurseDecode(State);

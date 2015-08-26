@@ -5,10 +5,10 @@
 #include <utility>
 
 typedef std::vector<bool> HuffmanCode;
-typedef std::map<char, HuffmanCode > HuffmanMap;
+typedef std::map<BYTE, HuffmanCode > HuffmanMap;
 struct Trie{
     int freq;
-    char c;
+    BYTE c;
     bool isLeaf;
     Trie * zero;
     Trie * one;

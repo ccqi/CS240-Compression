@@ -36,13 +36,12 @@ struct TrieCompare{
 
 vector<bool> HuffmanEncoder::encode(){
     vector<bool> plainBits = Decorator::encode();
-    string plainText = getString(plainBits);
-
+    int size = plainBits.size()/8;
+    BYTE * plainText = getBytes(plainBits);
     //make freq table
-    map<char,int> frequencyTable;
-    for(auto it = plainText.begin();it!=plainText.end();++it){
-        char c = *it;
-        frequencyTable[c]++;
+    map<BYTE,int> frequencyTable;
+    for(int i=0;i<size;i++){
+        frequencyTable[plainText[i]]++;
     }
     //construct leaves
     priority_queue<Trie*, vector<Trie*>, TrieCompare> leaves;
@@ -80,11 +79,25 @@ vector<bool> HuffmanEncoder::encode(){
     HuffmanCode prefix;
     HuffmanMap huffmanCodes;
     getHuffmanCodes(iter, prefix, huffmanCodes);
-    for(auto it = plainText.begin();it!=plainText.end();++it){
-        char c = *it;
+    for(int i=0;i<size;i++){
+        BYTE c = plainText[i];
         HuffmanCode curCode = huffmanCodes[c];
         encoding_.insert(encoding_.end(),curCode.begin(),curCode.end());
     }
+    //pad a non-multiple of 8 with zeros
+    BYTE bitsize =encoding_.size();
+    int padding = 0;
+    if(bitsize % 8 > 0){
+        padding = 8 - bitsize % 8;
+        for(int i=0;i<padding;i++){
+            encoding_.push_back(false);
+        }
+    }
+    stringstream ss;
+    ss<<(char)padding;
+    vector<bool> bits = getBits(ss.str());
+    bits.insert(bits.end(),encoding_.begin(),encoding_.end());
+    encoding_ = bits;
 
     double ratio = (double)encoding_.size()/plainBits.size();
     cout<<"Compression ratio: "<<ratio<<endl;
@@ -109,6 +122,7 @@ void HuffmanEncoder::getHuffmanCodes(Trie * trie, HuffmanCode & prefix , Huffman
     }
 }
 void HuffmanEncoder::print(ofstream& os){
+    Decorator::print(os);
     BYTE * binary= getBytes(encoding_);
     int size = encoding_.size()/8;
     os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
@@ -134,7 +148,7 @@ void HuffmanEncoder::print(ofstream& os){
 //        cout<<endl;
 //    }
 //    cout<<"New encoding: "<<endl;
-//    for(auto iter = bits.begin();iter!=bits.end();++iter){
+//    for(auto iter = encoding_.begin();iter!=encoding_.end();++iter){
 //            cout<<*iter;
 //    }
 //    cout<<endl;
@@ -143,12 +157,19 @@ void HuffmanEncoder::print(ofstream& os){
 
 vector<bool> HuffmanEncoder::getDecode(vector<bool> cipherCode){
     string plainText;
-    auto it = cipherCode.begin();
+
+    //read padding
+    vector<bool> first(8);
+    copy(cipherCode.begin(),cipherCode.begin()+8,first.begin());
+    BYTE * padding = getBytes(first);
     //read tree
+    auto it = cipherCode.begin()+8;
     Trie * head = readTrie(it);
     Trie * tree_iter = head;
+
+    //decrpyt
     ++it;
-    for(;it!=cipherCode.end();++it){
+    for(;it!=cipherCode.end()-*padding;++it){
         if(tree_iter==NULL){
             continue;
         }

@@ -2,10 +2,6 @@
 
 using namespace std;
 
-
-
-
-
 LZWEncoder::LZWEncoder(TextComponent * component_):Decorator(component_){
     id_ = LZW;
 }
@@ -33,7 +29,7 @@ vector<bool> LZWEncoder::encode(){
 
        if(table.find(w+key)== table.end()){
             int code = table[w];
-            writeBits(bits,code,table.size()-1);
+            writeBits(bits,code,getBinarySize(table.size()-1));
 
             table[w+key] = table.size()-1;
             w = key;
@@ -42,15 +38,16 @@ vector<bool> LZWEncoder::encode(){
             w = w+key;
        }
     }
-    writeBits(bits,table[w],table.size()-1);
+    writeBits(bits,table[w],getBinarySize(table.size()-1));
 
     //write stop bites
-    writeBits(bits,0,table.size()-1);
+    writeBits(bits,0,getBinarySize(table.size()-1));
 
     //pad a non-multiple of 8 with zeros
     int bitsize =bits.size();
     if(bitsize % 8 > 0){
-        for(int i=0;i<(8-bitsize%8);i++){
+        int padding = 8 - bitsize % 8;
+        for(int i=0;i<padding;i++){
             bits.push_back(false);
         }
     }
@@ -77,11 +74,11 @@ vector<bool> LZWEncoder::getDecode(vector<bool> cipherCode){
     string plainText;
     auto it = cipherCode.begin();
 
-    int prev_code = readBits(cipherCode,it,table.size()-1);
+    int prev_code = readBits(cipherCode,it,getBinarySize(table.size()-1));
     int first_code = prev_code;
     plainText+=table[prev_code];
     int cur_code;
-    while(cur_code = readBits(cipherCode,it,table.size())){
+    while(cur_code = readBits(cipherCode,it,getBinarySize(table.size()))){
         string decode;
         if(cur_code>=table.size()){
             decode = table[prev_code];
@@ -101,53 +98,16 @@ vector<bool> LZWEncoder::getDecode(vector<bool> cipherCode){
 }
 
 void LZWEncoder::print(ofstream& os){
-    //Decorator::print(os);
-    BYTE * binary= getBytes(encoding_);
-    int size = encoding_.size()/8;
-
-    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
-    os.close();
+    Decorator::print(os);
+//    BYTE * binary= getBytes(encoding_);
+//    int size = encoding_.size()/8;
+//
+//    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
+//    os.close();
 
     cout<<endl<<"After LZW encoding:"<<endl;
     cout<<"Length of bits: "<<encoding_.size()<<endl;
     double ratio = (double)encoding_.size()/getDecode(encoding_).size();
     cout<<"Compression ratio: "<<ratio<<endl;
 
-}
-
-
-//convert from index to binary bits
-void LZWEncoder::writeBits(vector<bool>& bits, int code,int max_size){
-    int bitSize = getBinarySize(max_size);
-    for(int i=0;i<bitSize;i++){
-        bits.push_back(code%2);
-        code/=2;
-    }
-}
-
-//convert a string of bits into an index
-int LZWEncoder::readBits(vector<bool> bits, vector<bool>::iterator& it,int max_size){
-
-    int bit_size = getBinarySize(max_size);
-    int acc = 0;
-    for(int i=0;i<bit_size;i++){
-        if(*it == 1){
-            int pow2 = 1;
-            for(int j=0;j<i;j++){
-                pow2 *= 2;
-            }
-            acc+=pow2;
-        }
-        ++it;
-    }
-    return acc;
-}
-int LZWEncoder::getBinarySize(int max_size){
-    int bitSize = 0;
-    int iter=1;
-    while(iter<=max_size){
-        bitSize++;
-        iter *=2;
-    }
-    return bitSize;
 }

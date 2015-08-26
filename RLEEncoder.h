@@ -11,7 +11,6 @@ class RLEEncoder : public Decorator
         virtual ~RLEEncoder();
         std::vector<bool> encode();
         virtual void print(std::ofstream&);
-        //TextComponent * getComponent();
     private:
         std::vector<bool> getDecode(std::vector<bool>);
 };

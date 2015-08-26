@@ -75,19 +75,6 @@ int main(int argc, char * argv[]){
         }
         text = new PlainText(whole_data);
     }
-
-
-////    std::streambuf * buf;
-//    std::ofstream of;
-//
-//    if(argc == 3) {
-//        of.open(argv[2]);
-//        buf = of.rdbuf();
-//    }
-//    else {
-//        buf = std::cout.rdbuf();
-//    }
-
     //make output file
     std::ofstream myFile;
 
@@ -133,22 +120,12 @@ int main(int argc, char * argv[]){
                 text = lzw;
                 break;
             }
-//            case PRINT: {
-//                text->print(myFile);
-//                break;
-//            }
             case ENCODE: {
                 vector<bool> encoding = text->encode();
                 text->print(myFile);
                 break;
             }
             case DECODE: {
-//                cout<<"What algorithm do you want to decode: [m = move to front, b = burrows wheeler transform, h = huffman encoding, r = run length encoding, l = lzw compression]";
-//                cout<<endl;
-//                string command2;
-//                cin >> command2;
-//                State op2;
-//                op2 = convertState(command2);
                 if(argc==1){
                     text->setEncoding(plainText);
                 }

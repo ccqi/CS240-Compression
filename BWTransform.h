@@ -11,7 +11,6 @@ class BWTransform : public Decorator
         virtual ~BWTransform();
         std::vector<bool> encode();
         void print(std::ofstream&);
-        //TextComponent * getComponent();
     private:
         std::vector<bool> getDecode(std::vector<bool>);
 

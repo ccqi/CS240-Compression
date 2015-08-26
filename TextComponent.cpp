@@ -65,3 +65,45 @@ void TextComponent::setEncoding(string encoding){
 vector<bool> TextComponent::getEncoding() const{
     return encoding_;
 }
+//convert from index to binary bits
+void TextComponent::writeBits(vector<bool>& bits, int code,int bit_size){
+//    int bitSize = getBinarySize(max_size);
+    for(int i=0;i<bit_size;i++){
+        bits.push_back(code%2);
+        code/=2;
+    }
+}
+
+//convert a string of bits into an index
+int TextComponent::readBits(vector<bool> bits, vector<bool>::iterator& it,int bit_size){
+
+//    int bit_size = getBinarySize(max_size);
+    int acc = 0;
+    for(int i=0;i<bit_size;i++){
+        if(*it == 1){
+            int pow2 = 1;
+            for(int j=0;j<i;j++){
+                pow2 *= 2;
+            }
+            acc+=pow2;
+        }
+        ++it;
+    }
+    return acc;
+}
+int TextComponent::getBinarySize(int max_size){
+    int bitSize = 0;
+    int iter=1;
+    while(iter<=max_size){
+        bitSize++;
+        iter *=2;
+    }
+    return bitSize;
+}
+void TextComponent::print(ofstream& os){
+    BYTE * binary= getBytes(encoding_);
+    int size = encoding_.size()/8;
+
+    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
+    os.close();
+}

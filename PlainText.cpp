@@ -19,23 +19,16 @@ vector<bool> PlainText::encode(){
 }
 
 void PlainText::print(ofstream& os){
+    TextComponent::print(os);
     cout<<"Original file length: "<<encoding_.size()<<endl;
-    plainText_ = getString(encoding_);
-    os<<plainText_;
-    os.close();
+
 }
 TextComponent * PlainText::decode(){
     return this;
 }
-//void PlainText::recurseDecode(State id){
-//    cerr<<"The string has not been encoded with this algorithm."<<endl;
-//}
 State PlainText::getID() const{
     return NONE;
 }
-//TextComponent * PlainText::getComponent(){
-//
-//}
 vector<bool> PlainText::getDecode(vector<bool> cipherCode){
     return cipherCode;
 }

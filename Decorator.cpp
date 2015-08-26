@@ -14,9 +14,15 @@ vector<bool> Decorator::encode(){
     return component_->encode();
 }
 void Decorator::print(ofstream& os){
-    return component_->print(os);
+    TextComponent::print(os);
 }
-
+//void Decorator::print(ofstream& os){
+//    BYTE * binary= getBytes(encoding_);
+//    int size = encoding_.size()/8;
+//
+//    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
+//    os.close();
+//}
 TextComponent * Decorator::decode(){
     TextComponent * childRef = component_;
     childRef->setEncoding(this->getDecode(encoding_));
@@ -24,6 +30,7 @@ TextComponent * Decorator::decode(){
     delete this;
     return childRef;
 }
+
 //TextComponent * Decorator::decode(State id){
 //    if(this->getID() == id){
 //        TextComponent * childRef = component_;

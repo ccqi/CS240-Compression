@@ -1,8 +1,8 @@
 CXX= g++
 CXXFLAGS = -g -Wall -MMD -std=c++0x 
-OBJECTS = main.o TextComponent.o Decorator.o HuffmanEncoder.o LZWEncoder.o MTFEncoder.o PlainText.o RLEEncoder.o BWTransform.o
+OBJECTS = main.o TextComponent.o Decorator.o HuffmanEncoder.o LZWEncoder.o MTFEncoder.o PlainText.o RLEEncoder.o BWTransform.o Encoding.o
 DEPENDS = ${OBJECTS:.o=.d}
-EXEC = hangman
+EXEC = compression
 
 ${EXEC} : ${OBJECTS}
 	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}

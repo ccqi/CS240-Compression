@@ -15,20 +15,20 @@
 #include <set>
 #include <assert.h>
 #include <fstream>
+#include "Encoding.h"
 
 enum State {NONE, HUFFMAN, BWT, RLE, MTF, LZW,ENCODE, DECODE, QUIT};
-
-typedef unsigned char BYTE;
 
 class TextComponent
 {
     public:
         TextComponent();
         virtual ~TextComponent();
-        virtual void print(std::ofstream &) = 0;
+        virtual void print(std::ofstream &);
         virtual std::vector<bool> encode() = 0;
         virtual TextComponent * decode() = 0;
         virtual State getID() const = 0;
+        Encoding getEncodings() const;
         void setEncoding(std::vector<bool>);
         void setEncoding(std::string);
         std::vector<bool> getEncoding() const;
@@ -37,7 +37,11 @@ class TextComponent
         virtual std::vector<bool> getDecode(std::vector<bool>) = 0;
         std::string getString(std::vector<bool>);
         BYTE * getBytes(std::vector<bool>);
+        void writeBits(std::vector<bool>&, int, int);
+        int readBits(std::vector<bool>, std::vector<bool>::iterator&, int);
+        int getBinarySize(int);
         std::vector<bool> encoding_;
+        Encoding encoding;
 
         State id_;
     private:

@@ -55,9 +55,9 @@ vector<bool> BWTransform::getDecode(vector<bool> cipherCode){
     int j = distance(cipherText.begin(),find(cipherText.begin(),cipherText.end(),'\0'));
     while(true){
         j = N[j];
-        pt +=cipherText[j];
         if(cipherText[j]=='\0')
             break;
+        pt +=cipherText[j];
     }
     return getBits(pt);
 }
@@ -65,13 +65,18 @@ vector<bool> BWTransform::getDecode(vector<bool> cipherCode){
 
 void BWTransform::print(ofstream& os){
     Decorator::print(os);
+
+//    string text = getString(encoding_);
+//
+//    cout<<text<<endl;
+    BYTE * binary= getBytes(encoding_);
+    int size = encoding_.size()/8;
+
+    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
+    os.close();
+
     cout<<endl<<"After bwt encoding:"<<endl;
     cout<<"Length of bits: "<<encoding_.size()<<endl;
-    string text = getString(encoding_);
-
-    cout<<text<<endl;
-    os<<text;
-
 //    cout<<"New string: "<<text<<endl;
 //    cout<<"New binary: ";
 //    for(auto it = text.begin();it!=text.end();++it){
@@ -87,6 +92,3 @@ void BWTransform::print(ofstream& os){
     //cout<<endl;
 
 }
-//TextComponent * BWTransform::getComponent(){
-//    return Decorator::getComponent();
-//}
