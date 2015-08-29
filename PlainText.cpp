@@ -2,25 +2,35 @@
 
 using namespace std;
 
-PlainText::PlainText(string text):plainText_(text){
-    id_ = NONE;
-    encoding_ = getBits(text);
+//PlainText::PlainText(string text):plainText_(text){
+//    id_ = NONE;
+//    encoding_ = Encoding::convertToBits(text)getBits(text);
+//}
+//
+//PlainText::PlainText(BITS code){
+//    id_ = NONE;
+//    plainText_ = getString(code);
+//    encoding_ = code;
+//}
+PlainText::PlainText(Encoding * encoding){
+    id_ = PLAIN;
+    encoding_ = encoding;
+    encoding_->addToFront(Encoding::convertToBits(id_,8));
+//    BITS bits = Encoding::convertToBits(id_,8);
+//    BITS encodingBits = encoding->getBits();
+//    bits.insert(bits.end(),encodingBits.begin(),encodingBits.end());
+//    encoding_ = new Encoding(bits);
 }
 
-PlainText::PlainText(vector<bool> code){
-    id_ = NONE;
-    plainText_ = getString(code);
-    encoding_ = code;
-}
 PlainText::~PlainText(){}
 
-vector<bool> PlainText::encode(){
+Encoding * PlainText::encode(){
     return encoding_;
 }
 
 void PlainText::print(ofstream& os){
     TextComponent::print(os);
-    cout<<"Original file length: "<<encoding_.size()<<endl;
+    cout<<"Original file length: "<<encoding_->getSize()<<endl;
 
 }
 TextComponent * PlainText::decode(){
@@ -29,7 +39,7 @@ TextComponent * PlainText::decode(){
 State PlainText::getID() const{
     return NONE;
 }
-vector<bool> PlainText::getDecode(vector<bool> cipherCode){
+Encoding * PlainText::getDecode(Encoding * cipherCode){
     return cipherCode;
 }
 

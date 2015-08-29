@@ -20,14 +20,15 @@ class Decorator : public TextComponent
         Decorator(TextComponent*);
         virtual ~Decorator();
     protected:
-        virtual std::vector<bool> encode();
+        virtual Encoding * encode();
         virtual void print(std::ofstream&);
         virtual TextComponent * decode();
         State getID() const;
+        double compressionRatio_;
     private:
         TextComponent * component_;
         //void recurseDecode(State);
-        virtual std::vector<bool> getDecode(std::vector<bool>);
+        virtual Encoding * getDecode(Encoding*);
 
 };
 

@@ -4,8 +4,7 @@
 #include "Decorator.h"
 #include <utility>
 
-typedef std::vector<bool> HuffmanCode;
-typedef std::map<BYTE, HuffmanCode > HuffmanMap;
+typedef std::map<BYTE, BITS > HuffmanMap;
 struct Trie{
     int freq;
     BYTE c;
@@ -19,13 +18,13 @@ class HuffmanEncoder : public Decorator
     public:
         HuffmanEncoder(TextComponent*);
         virtual ~HuffmanEncoder();
-        std::vector<bool> encode();
+        Encoding * encode();
         virtual void print(std::ofstream&);
     private:
-        void getHuffmanCodes(Trie*, HuffmanCode&,HuffmanMap&);
-        std::vector<bool> getDecode(std::vector<bool>);
-        void writeTrie(Trie*, std::vector<bool>&);
-        Trie * readTrie(std::vector<bool>::iterator&);
+        void getHuffmanCodes(Trie*, BITS&,HuffmanMap&);
+        Encoding * getDecode(Encoding*);
+        void writeTrie(Trie*, BITS&);
+        Trie * readTrie(BITS::iterator&);
 
 };
 bool trieCompare(Trie*, Trie*);

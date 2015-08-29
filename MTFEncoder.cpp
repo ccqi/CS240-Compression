@@ -10,9 +10,10 @@ MTFEncoder::MTFEncoder(TextComponent * component):Decorator(component){
 MTFEncoder::~MTFEncoder(){}
 
 
-vector<bool> MTFEncoder::encode(){
-    vector<bool> plainBits = Decorator::encode();
-    string plainText = getString(plainBits);
+Encoding * MTFEncoder::encode(){
+    Encoding * originalEncoding = Decorator::encode();
+    BITS plainBits = originalEncoding->getBits();
+    string plainText = Encoding::convertToString(plainBits);
     string alpha;
     for(int i=0;i<128;i++){
         alpha.push_back((char)i);
@@ -34,13 +35,14 @@ vector<bool> MTFEncoder::encode(){
 //    alpha_ = alpha;
 
     //string encoding;
+    encoding_->writeBits(id_,8);
     for(int i=0;i<plainText.length();i++){
         char c = plainText[i];
         auto it = find_if(alpha.begin(),alpha.end(),[c](char ch)->bool{
                                 return ch == c;
                             });
         int index = (std::distance(alpha.begin(),it));
-        writeBits(encoding_,index,8);
+        encoding_->writeBits(index,8);
         char first = alpha.front();
         string newAlpha = alpha;
         newAlpha.erase(remove_copy_if(alpha.begin(),alpha.end(),newAlpha.begin(),[c](char ch)->bool{
@@ -50,13 +52,16 @@ vector<bool> MTFEncoder::encode(){
         ss<<c<<newAlpha;
         alpha = ss.str();
     }
-    assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
+    //encoding_->reset();
+    Encoding * test =getDecode(encoding_);
+    //assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     return encoding_;
 }
-vector<bool> MTFEncoder::getDecode(vector<bool> cipherCode){
-    vector<bool> plainCode;
+Encoding * MTFEncoder::getDecode(Encoding * encoding){
+    BITS cipherCode = encoding->getBits();
+    BITS plainCode;
     string plainText;
-    string cipherText = getString(cipherCode);
+    string cipherText = Encoding::convertToString(cipherCode);
 
     //table of ASCII values 0-127
     string alpha;
@@ -76,17 +81,11 @@ vector<bool> MTFEncoder::getDecode(vector<bool> cipherCode){
         ss<<foundChar<<newAlpha;
         alpha = ss.str();
     }
-    return getBits(plainText);
+    return new Encoding(plainText,TEXT);
 
 }
 void MTFEncoder::print(ofstream& os){
     Decorator::print(os);
-    BYTE * binary= getBytes(encoding_);
-    int size = encoding_.size()/8;
-    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
-    os.close();
-
-
     cout<<endl<<"After move to front encoding:"<<endl;
 //    string text = getString(encoding_);
 //    cout<<"Bytes: ";
@@ -99,7 +98,7 @@ void MTFEncoder::print(ofstream& os){
 //        cout<<*it;
 //    }
 //    cout<<endl;
-    cout<<"Length of bits: "<<encoding_.size()<<endl;
-    double ratio = (double)encoding_.size()/getDecode(encoding_).size();
-    cout<<"Compression ratio: "<<ratio<<endl;
+    cout<<"Length of bits: "<<encoding_->getSize()<<endl;
+//    double ratio = (double)encoding_.size()/getDecode(encoding_).size();
+//    cout<<"Compression ratio: "<<ratio<<endl;
 }

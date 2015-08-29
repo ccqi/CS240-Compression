@@ -9,16 +9,17 @@
 class PlainText : public TextComponent
 {
     public:
-        PlainText(std::string);
-        PlainText(std::vector<bool>);
+//        PlainText(std::string);
+//        PlainText(BITS);
+        PlainText(Encoding *);
         virtual ~PlainText();
-        std::vector<bool> encode();
+        Encoding * encode();
         TextComponent * decode();
         virtual void print(std::ofstream&);
         State getID() const;
     private:
         std::string plainText_;
-        std::vector<bool> getDecode(std::vector<bool>);
+        Encoding * getDecode(Encoding *);
 
 };
 

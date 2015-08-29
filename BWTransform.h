@@ -4,15 +4,16 @@
 #include "Decorator.h"
 
 
+
 class BWTransform : public Decorator
 {
     public:
         BWTransform(TextComponent*);
         virtual ~BWTransform();
-        std::vector<bool> encode();
+        Encoding * encode();
         void print(std::ofstream&);
     private:
-        std::vector<bool> getDecode(std::vector<bool>);
+        Encoding * getDecode(Encoding*);
 
 };
 

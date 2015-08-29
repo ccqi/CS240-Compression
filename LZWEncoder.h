@@ -10,12 +10,12 @@ class LZWEncoder : public Decorator
     public:
         LZWEncoder(TextComponent *);
         virtual ~LZWEncoder();
-        std::vector<bool> encode();
+        Encoding * encode();
         virtual void print(std::ofstream&);
 
     private:
         std::vector<std::string> table_;
-        std::vector<bool> getDecode(std::vector<bool>);
+        Encoding * getDecode(Encoding*);
 };
 
 #endif // LZWENCODER_H

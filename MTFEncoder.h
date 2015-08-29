@@ -10,9 +10,9 @@ class MTFEncoder : public Decorator
         MTFEncoder(TextComponent*);
         virtual ~MTFEncoder();
         virtual void print(std::ofstream&);
-        std::vector<bool> encode();
+        Encoding * encode();
     private:
-        std::vector<bool> getDecode(std::vector<bool>);
+        Encoding * getDecode(Encoding*);
 };
 
 #endif // MTFENCODER_H

@@ -2,15 +2,16 @@
 
 using namespace std;
 
-Decorator::Decorator(TextComponent * component):component_(component){
+Decorator::Decorator(TextComponent * component):component_(component),compressionRatio_(1.0){
     //encoding_ = component_->getEncoding();
+    encoding_ = new Encoding();
 }
 
 Decorator::~Decorator()
 {
     //delete component_;
 }
-vector<bool> Decorator::encode(){
+Encoding * Decorator::encode(){
     return component_->encode();
 }
 void Decorator::print(ofstream& os){
@@ -66,6 +67,6 @@ TextComponent * Decorator::decode(){
 State Decorator::getID() const{
     return id_;
 }
-vector<bool> Decorator::getDecode(vector<bool> cipherCode){
+Encoding * Decorator::getDecode(Encoding * cipherCode){
 
 }

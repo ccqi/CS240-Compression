@@ -8,10 +8,11 @@ LZWEncoder::LZWEncoder(TextComponent * component_):Decorator(component_){
 
 LZWEncoder::~LZWEncoder(){
 }
-vector<bool> LZWEncoder::encode(){
+Encoding * LZWEncoder::encode(){
 
-    vector<bool> plainBits = Decorator::encode();
-    string plainText = getString(plainBits);
+    Encoding * originalEncoding = Decorator::encode();
+    BITS plainBits = originalEncoding->getBits();
+    string plainText = Encoding::convertToString(plainBits);
 
     //table of ASCII values 0-127
     map<string,int> table;
@@ -20,8 +21,11 @@ vector<bool> LZWEncoder::encode(){
         ss<<(char)i;
         table[ss.str()]=i;
     }
+
+    encoding_->writeBits(id_,8);
+
     string w;
-    vector<bool> bits;
+    //BITS bits;
     for(int i=0;i<plainText.size();i++){
        stringstream ss;
        ss<<(char)plainText[i];
@@ -29,7 +33,7 @@ vector<bool> LZWEncoder::encode(){
 
        if(table.find(w+key)== table.end()){
             int code = table[w];
-            writeBits(bits,code,getBinarySize(table.size()-1));
+            encoding_->writeBits(code,Encoding::getBinarySize(table.size()-1));
 
             table[w+key] = table.size()-1;
             w = key;
@@ -38,29 +42,31 @@ vector<bool> LZWEncoder::encode(){
             w = w+key;
        }
     }
-    writeBits(bits,table[w],getBinarySize(table.size()-1));
+    encoding_->writeBits(table[w],Encoding::getBinarySize(table.size()-1));
 
     //write stop bites
-    writeBits(bits,0,getBinarySize(table.size()-1));
+    encoding_->writeBits(0,Encoding::getBinarySize(table.size()-1));
 
     //pad a non-multiple of 8 with zeros
-    int bitsize =bits.size();
+    int bitsize =encoding_->getSize();
     if(bitsize % 8 > 0){
         int padding = 8 - bitsize % 8;
         for(int i=0;i<padding;i++){
-            bits.push_back(false);
+            encoding_->writeBits(0,1);
         }
     }
-    encoding_ = bits;
+    //encoding_->reset();
+    //encoding_ = bits;
 
     //check invariant
-    assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
+    //Encoding test = getDecode(encoding_);
+    //assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     return encoding_;
 }
 
-vector<bool> LZWEncoder::getDecode(vector<bool> cipherCode){
+Encoding * LZWEncoder::getDecode(Encoding * encoding){
 
-    if(cipherCode.size()==0){
+    if(encoding->getSize()==0){
         throw new string("No code to decode");
     }
     //table of ASCII values 0-127
@@ -72,13 +78,13 @@ vector<bool> LZWEncoder::getDecode(vector<bool> cipherCode){
     }
 
     string plainText;
-    auto it = cipherCode.begin();
+    //auto it = cipherCode.begin();
 
-    int prev_code = readBits(cipherCode,it,getBinarySize(table.size()-1));
+    int prev_code = encoding->readBits(Encoding::getBinarySize(table.size()-1));
     int first_code = prev_code;
     plainText+=table[prev_code];
     int cur_code;
-    while(cur_code = readBits(cipherCode,it,getBinarySize(table.size()))){
+    while(cur_code = encoding->readBits(Encoding::getBinarySize(table.size()))){
         string decode;
         if(cur_code>=table.size()){
             decode = table[prev_code];
@@ -94,20 +100,15 @@ vector<bool> LZWEncoder::getDecode(vector<bool> cipherCode){
         table.push_back(ss.str());
         prev_code = cur_code;
     }
-    return getBits(plainText);
+    return new Encoding(plainText,TEXT);
 }
 
 void LZWEncoder::print(ofstream& os){
     Decorator::print(os);
-//    BYTE * binary= getBytes(encoding_);
-//    int size = encoding_.size()/8;
-//
-//    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
-//    os.close();
 
     cout<<endl<<"After LZW encoding:"<<endl;
-    cout<<"Length of bits: "<<encoding_.size()<<endl;
-    double ratio = (double)encoding_.size()/getDecode(encoding_).size();
-    cout<<"Compression ratio: "<<ratio<<endl;
+    cout<<"Length of bits: "<<encoding_->getSize()<<endl;
+    //double ratio = (double)encoding_.size()/getDecode(encoding_).size();
+    //cout<<"Compression ratio: "<<ratio<<endl;
 
 }

@@ -8,29 +8,53 @@
 #include <string>
 #include <vector>
 
+typedef std::vector<bool> BITS;
 typedef unsigned char BYTE;
+typedef std::vector<BYTE> BYTES;
+enum State {NONE, PLAIN, HUFFMAN, BWT, RLE, MTF, LZW,ENCODE, DECODE, QUIT};
+enum TYPE {TEXT, BINARY, HEX};
 
 class Encoding
 {
     public:
-        Encoding();
+        explicit Encoding();
+        Encoding(std::string,TYPE);
+        Encoding(BITS);
+        Encoding(BYTES);
         virtual ~Encoding();
-        std::vector<bool> getEncodedBits() const;
-        std::string getEncodedString() const;
-        std::vector<bool> getOriginalBits() const;
-        std::string getOriginalString() const;
-        double getRatio() const;
 
+        //getters
+        BITS getBits() const;
+        int getSize() const;
+        BYTE * getBinary() const;
+        BYTES getBytes() const;
+
+        //setters
+        void setBits(BITS);
+        State readState();
+        void reset();
+
+        //static conversion methods
+        static BITS convertToBits(int,int);
+        static BITS convertToBits(std::string);
+        static BITS convertToBits(BYTES);
+        static std::string convertToString(BITS);
+        static BYTES convertToBytes(BITS);
+        static int getBinarySize(int);
+        static BYTE * convertToBinary(BITS);
+
+        //mutators
+        void writeBits(int, int);
+        int readBits(int);
+        void writeBinary(std::ofstream&);
+        void add(const BITS& b);
+        void addToFront(const BITS& b);
     private:
-        std::vector<bool> bits_;
-        std::string text_;
-        std::string originalText_;
-        std::vector<bool> originalBits_;
-        double compressionRatio_;
+        BITS bits_;
+        BYTE * text_;
+        TYPE type_;
+        BITS::iterator it_;
 
-        std::vector<bool> getBits(std::string);
-        std::string getString(std::vector<bool>);
-        BYTE * getBytes(std::vector<bool>);
 };
 
 #endif // ENCODING_H

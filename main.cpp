@@ -14,6 +14,7 @@
 #include "RLEEncoder.h"
 #include "BWTransform.h"
 #include "LZWEncoder.h"
+#include "Encoding.h"
 using namespace std;
 
 
@@ -49,20 +50,45 @@ State convertState( string opStr ) {
     }
     }
 }
-
+TextComponent * setDecorator(State state,TextComponent * text){
+switch(state){
+    case HUFFMAN: {
+        return new HuffmanEncoder(text);
+    }
+    case BWT: {
+        return new BWTransform(text);
+    }
+    case RLE: {
+        return new RLEEncoder(text);
+    }
+    case MTF: {
+        return new MTFEncoder(text);
+    }
+    case LZW: {
+        return new LZWEncoder(text);
+    }
+    default: {
+        return text;
+    }
+}
+}
 
 int main(int argc, char * argv[]){
     cout << "CS240 Compression Simulation with decorator pattern:" << endl << endl;
 
     //read from command line or input
     TextComponent * text;
-    vector<bool> whole_data;
+    BITS whole_data;
     string plainText;
+    Encoding * encoding;
+    string command;
+    State op;
     if(argc ==1){
 
         cout << "Please enter your string to be encoded: ";
         getline(cin,plainText);
-        text = new PlainText(plainText);
+        encoding = new Encoding(plainText,TEXT);
+        op = ENCODE;
     }
     else{
         ifstream file(argv[1], ios::binary);
@@ -73,82 +99,62 @@ int main(int argc, char * argv[]){
                 whole_data.push_back(((byte >> i) & 1) != 0);
             }
         }
-        text = new PlainText(whole_data);
+        encoding = new Encoding(whole_data);
+        cout<<"Do you wish to encode[e] or decode[d]: ";
+        cin >> command;
+        op = convertState(command);
     }
+    text = new PlainText(encoding);
     //make output file
     std::ofstream myFile;
-
+    string filename;
     if(argc >= 3){
-        myFile.open(argv[2],ios::binary);
+        filename = argv[2];
     }
     else{
-        myFile.open("output.bin",ios::binary);
+        filename = "output.bin";
     }
     //text->print(myFile);
 
     //get input from command line
-    cout<<"[m = move to front, b = burrows wheeler transform, h = huffman encoding, r = run length encoding, l = lzw compression p = print, d = decode, q= quit ]"<<endl<<"Enter actions seperated by spaces: ";
-    string command;
-    cin >> command;
 
-    State op = convertState(command);
-
-    while ( !cin.eof() ) {
-        switch ( op ) {
-            case HUFFMAN: {
-                TextComponent * huffman = new HuffmanEncoder(text);
-                text = huffman;
-                break;
+    while(!cin.eof()&& op!=QUIT){
+        if(op == ENCODE){
+            cout<<"[b = burrows wheeler transform, h = huffman encoding, l = lzw compression, m = move to front r = run length encoding, q= quit ]"
+            <<endl<<"Enter actions seperated by spaces: ";
+            cin >> command;
+            op = convertState(command);
+            while ( op!=QUIT) {
+                text = setDecorator(op,text);
+                Encoding * encoding = text->encode();
+                myFile.open(filename,ios::binary);
+                encoding->writeBinary(myFile);
+                cout<<"[b = burrows wheeler transform, h = huffman encoding, l = lzw compression, m = move to front r = run length encoding, q= quit ]"
+                <<endl<<"Enter actions seperated by spaces: ";
+                cin>>command;
+                op = convertState(command);
             }
-            case BWT: {
-                TextComponent * bwt = new BWTransform(text);
-                text = bwt;
-                break;
-            }
-            case RLE: {
-                TextComponent * rle = new RLEEncoder(text);
-                text = rle;
-                break;
-            }
-            case MTF: {
-                TextComponent * mtf = new MTFEncoder(text);
-                text = mtf;
-                break;
-            }
-            case LZW: {
-                TextComponent * lzw = new LZWEncoder(text);
-                text = lzw;
-                break;
-            }
-            case ENCODE: {
-                vector<bool> encoding = text->encode();
-                text->print(myFile);
-                break;
-            }
-            case DECODE: {
-                if(argc==1){
-                    text->setEncoding(plainText);
-                }
-                else{
-                    text->setEncoding(whole_data);
-                }
-                text = text->decode();
-                text->print(myFile);
-                break;
-            }
-            case QUIT:
-                break;
-            default: {
-                break;
-            }
-        } // switch
-        if(op == QUIT){
+            cout<<endl;
             break;
         }
-        cout<<endl<<"[m = move to front, b = burrows wheeler transform, h = huffman encoding, r = run length encoding, l = lzw compression, p = print, d = decode, q = quit ]"<<endl<<"Enter Action: ";
+        if(op == DECODE){
+            Encoding * curEncoding = encoding;
+            op = curEncoding->readState();
+            //cout<<op<<endl;
+            while(op!=PLAIN){
+                myFile.open(filename,ios::binary);
+                text = setDecorator(op,text);
+                text->setEncoding(curEncoding);
+                text = text->decode();
+                curEncoding = text->getEncoding();
+                op = curEncoding->readState();
+                curEncoding->writeBinary(myFile);
+            }
+            break;
+        }
+        cout<<"Do you wish to encode[e] or decode[d]: ";
         cin >> command;
         op = convertState(command);
-
     } // while cin OK
     myFile.close();
     return 0;

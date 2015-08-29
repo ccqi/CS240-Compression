@@ -8,14 +8,14 @@ RLEEncoder::RLEEncoder(TextComponent * component):Decorator(component){
 
 RLEEncoder::~RLEEncoder(){}
 
-vector<bool> RLEEncoder::encode(){
-    vector<bool> plainBits = Decorator::encode();
-    vector<bool> cipherBits;
+Encoding * RLEEncoder::encode(){
+    Encoding * originalEncoding = Decorator::encode();
+    BITS plainBits = originalEncoding->getBits();
+    BITS cipherBits;
     if(plainBits.size()==0){
         throw("no string to encode");
     }
-
-    encoding_.push_back(plainBits[0]);
+    encoding_->writeBits(plainBits[0],1);
     int blockLength = 1;
     for(auto it = plainBits.begin()+1;it!=plainBits.end();++it){
 
@@ -27,36 +27,40 @@ vector<bool> RLEEncoder::encode(){
                 blockLength++;
             }
             int temp = blockLength;
-            vector<bool> binLength;
+            BITS binLength;
             while(temp>0){
                 binLength.push_back(temp%2);
                 temp/=2;
             }
             for(int i=0;i<binLength.size()-1;i++){
-                encoding_.push_back(false);
+                encoding_->writeBits(0,1);
             }
             while(!binLength.empty()){
-                encoding_.push_back(binLength.back());
+                encoding_->writeBits(binLength.back(),1);
                 binLength.pop_back();
             }
             blockLength = 1;
         }
     }
     //pad a non-multiple of 8 with zeros
-    BYTE bitsize =encoding_.size();
+    int bitsize =encoding_->getSize();
     int padding = 0;
     if(bitsize % 8 > 0){
         padding = 8 - bitsize % 8;
         for(int i=0;i<padding;i++){
-            encoding_.push_back(false);
+            encoding_->writeBits(0,1);
         }
     }
-    stringstream ss;
-    ss<<(char)padding;
-    vector<bool> bits = getBits(ss.str());
-    bits.insert(bits.end(),encoding_.begin(),encoding_.end());
-    encoding_ = bits;
+    //stringstream ss;
+    //ss<<(char)padding;
+    encoding_->addToFront(Encoding::convertToBits(padding,8));
+    encoding_->addToFront(Encoding::convertToBits(id_,8));
 
+//    bits.insert(bits.end(),paddingBits.begin(),paddingBits.end());
+//    encoding encodingBits = encoding_->getBits();
+//    bits.insert(bits.end(),encodingBits.begin(),encodingBits.end());
+//    encoding_ = new Encoding(bits);
+    //Encoding * test = getDecode(encoding_);
 
     //encoding_ = cipherBits;
     //  assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
@@ -65,28 +69,29 @@ vector<bool> RLEEncoder::encode(){
 void RLEEncoder::print(ofstream& os){
     Decorator::print(os);
 
-    BYTE * binary= getBytes(encoding_);
-    int size = encoding_.size()/8;
-
-    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
-    os.close();
+//    BYTE * binary= getBytes(encoding_);
+//    int size = encoding_.size()/8;
+//
+//    os.write(reinterpret_cast<const char*>(&binary[0]),size*sizeof(BYTE));
+//    os.close();
 
     cout<<endl<<"After Run Length Encoding:";
     //copy(encoding_.begin(),encoding_.end(),ostream_iterator<bool>(cout));
-    cout<<endl<<"Length of new encoding: "<<encoding_.size()<<endl;
-    double ratio = (double)encoding_.size()/getDecode(encoding_).size();
-    cout<<"Compression ratio: "<<ratio<<endl;
+    cout<<endl<<"Length of new encoding: "<<encoding_->getSize()<<endl;
+//    double ratio = (double)encoding_.size()/getDecode(encoding_).size();
+//    cout<<"Compression ratio: "<<ratio<<endl;
 }
-vector<bool> RLEEncoder::getDecode(vector<bool> cipherCode){
+Encoding * RLEEncoder::getDecode(Encoding * encoding){
 
-    vector<bool> plainCode;
+    BITS plainCode;
+    BITS cipherCode = encoding->getBits();
     if(cipherCode.size()==0){
         throw("no string to decode");
     }
     //read padding
-    vector<bool> first(8);
+    BITS first(8);
     copy(cipherCode.begin(),cipherCode.begin()+8,first.begin());
-    BYTE * padding = getBytes(first);
+    BYTE * padding = Encoding::convertToBinary(first);
 
     bool curBit = cipherCode[8];
     auto it = cipherCode.begin()+9;
@@ -118,6 +123,6 @@ vector<bool> RLEEncoder::getDecode(vector<bool> cipherCode){
         blockLength = 0;
 
     }
-    return plainCode;
+    return new Encoding(plainCode);
 }
 

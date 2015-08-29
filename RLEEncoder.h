@@ -9,10 +9,10 @@ class RLEEncoder : public Decorator
     public:
         RLEEncoder(TextComponent*);
         virtual ~RLEEncoder();
-        std::vector<bool> encode();
+        Encoding * encode();
         virtual void print(std::ofstream&);
     private:
-        std::vector<bool> getDecode(std::vector<bool>);
+        Encoding * getDecode(Encoding *);
 };
 
 #endif // RLEENCODER_H
