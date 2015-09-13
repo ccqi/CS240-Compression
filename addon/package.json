@@ -1,0 +1,17 @@
+{
+  "name": "addon",
+  "version": "1.0.0",
+  "description": "First addon",
+  "main": "hello.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nan": "^2.0.9"
+  },
+  {
+  "gypfile: true"
+  }
+}

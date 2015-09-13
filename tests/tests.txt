@@ -1,0 +1,10 @@
+Unit tests
+r->h working
+h->r working
+->r->h working
+->h->r working
+b->l->e not working
+r->h-> not working
+h->r-> not working
+m->l not working
+l->m not working

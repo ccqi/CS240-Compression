@@ -1,0 +1,29 @@
+{
+  "name": "CS240-Compression",
+  "version": "1.0.0",
+  "description": "Compression algorithms in CS240 implemented using decorator pattern",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ccqi/CS240-Compression.git"
+  },
+  "keywords": [
+    "compression",
+    "cs240",
+    "waterloo"
+  ],
+  "author": "Charles Qi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ccqi/CS240-Compression/issues"
+  },
+  "homepage": "https://github.com/ccqi/CS240-Compression",
+  "dependencies": {
+    "body-parser": "^1.13.3",
+    "express": "^4.13.3"
+  }
+}
