@@ -21,6 +21,6 @@ var server = app.listen(3000, function () {
 });
 
 app.post('/encode', function(req, res) {
-  console.log(addon.hello());
+  console.log(addon.hello("test"));
   res.send('You sent the message "' + req.body.message + '".');
 });
