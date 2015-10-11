@@ -11,13 +11,19 @@
 	      <h3>Plain Text</h3>
 	      <textarea rows="4" cols="50" name ="message" placeholder="Enter text to encode"></textarea>
 	      </br>
+        <input type="radio" name="method" value="BWT">BWT</input>
+        <input type="radio" name="method" value="MTF">MTF</input>
+        <input type="radio" name="method" value="LZW">LZW</input>
+        <input type="radio" name="method" value="RLE">RLE</input>
+        <input type="radio" name="method" value="Huffman">Huffman</input>
+        </br>
 	      <input type = "submit" value="Encode" class = "Encode button"></input>
 		</fieldset>
 	  </form>
 	</div>
 	<div class ="output-panel">
 	<h3>Encoding</h3>
-	<textarea rows="4" cols="50">Hello world </textarea>
+	<textarea rows="4" cols="50"> </textarea>
 	</br>
 	<button class = "Decode button">Decode</button>
 	</div>

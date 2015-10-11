@@ -1,26 +1,35 @@
 #include <nan.h>
 #include <string>
+#include "TextWrapper.h"
 
 using namespace std;
 using namespace v8;
-using namespace Nan;
-void Method(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-  v8::String::Utf8Value param1(args[0]->ToString());
-  std::string text = std::string(*param1);
-  v8::Local<v8::String> jsText = Nan::New(text).ToLocalChecked();
-  args.GetReturnValue().Set(jsText);
-  
-}
 
-/*NAN_METHOD(Method) {
-    String::Utf8Value cmd(args[0]);
-    string text = string(*cmd);
-    NanReturnValue(NanNew<String>(text));
+/*void Encode (const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  
+  v8::String::Utf8Value param1(args[0]->ToString());
+  std::string plainText = std::string(*param1);
+  
+  TextComponent * text;
+  BITS whole_data;
+  Encoding * encoding;
+  encoding = new Encoding(plainText, TEXT);
+  text = new PlainText(encoding);
+  text = new BWTransform(text);
+  Encoding * curEncoding = text->encode();
+  string cipherText = Encoding::convertToString(curEncoding->getBits());
+
+  v8::Local<v8::String> jsText = Nan::New(cipherText).ToLocalChecked();
+  args.GetReturnValue().Set(jsText);
+}*/
+
+/*void Init(v8::Local<v8::Object> exports) {
+  exports->Set(Nan::New("encode").ToLocalChecked(),
+               Nan::New<v8::FunctionTemplate>(Encode)->GetFunction());
 }*/
 
 void Init(v8::Local<v8::Object> exports) {
-  exports->Set(Nan::New("hello").ToLocalChecked(),
-               Nan::New<v8::FunctionTemplate>(Method)->GetFunction());
+  TextWrapper::Init(exports);
 }
 
 NODE_MODULE(compression, Init)
