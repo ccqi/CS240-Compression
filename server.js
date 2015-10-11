@@ -9,10 +9,10 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
-app.use(express.static(__dirname + '/static'));
+app.use(express.static(__dirname + '/app'));
 
 app.get('/', function (req, res) {
-  res.sendfile('static/index.html',{root:__dirname});
+  res.sendFile('app/index.html',{root:__dirname});
 });
 
 var server = app.listen(3000, function () {
