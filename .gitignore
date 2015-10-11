@@ -30,3 +30,4 @@ node_modules
 
 #object files
 *.o
+*.d

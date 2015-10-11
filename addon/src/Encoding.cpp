@@ -133,6 +133,19 @@ string Encoding::convertToString(BITS bits){
     }
     return text;
 }
+
+string Encoding::convertToBinaryString(BITS bits){
+  string binaryString;
+  for(int i=0;i<bits.size();i++){
+    string bit = (bits[i]) ? "1" : "0";
+    binaryString += bit;
+    if ( i != 0 && i % 8 == 0){
+      binaryString+=" ";
+    }
+  }
+  return binaryString;
+}
+
 BYTES Encoding::convertToBytes(BITS bits){
     int count = bits.size()/8;
     BYTES bytes;

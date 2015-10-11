@@ -70,10 +70,9 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   v8::String::Utf8Value param2(args[1]->ToString());
   std::string type = std::string(*param2);
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  
   wrapper->component_ = setDecorator(type, wrapper->component_);
   Encoding * encoding = wrapper->component_->encode();
-  string cipherText = Encoding::convertToString(encoding->getBits());
+  string cipherText = Encoding::convertToBinaryString(encoding->getBits());
   
   v8::Local<v8::String> jsText = Nan::New(cipherText).ToLocalChecked();
   args.GetReturnValue().Set(jsText);

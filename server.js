@@ -24,8 +24,9 @@ var server = app.listen(3000, function () {
 
 });
 
-app.post('/encode', function(req, res) {
-  var textWrapper = new addon.TextWrapper(req.body.message);
-  var encoding = textWrapper.encode(req.body.message, req.body.method)
-  res.send('Encoded message: "' + encoding + '".');
+app.post('/api/encode', function(req, res) {
+  var textWrapper = new addon.TextWrapper(req.body.data);
+  var encoding = textWrapper.encode(req.body.data, req.body.method);
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify(encoding));
 });

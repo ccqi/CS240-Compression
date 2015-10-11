@@ -39,6 +39,7 @@ class Encoding
         static BITS convertToBits(std::string);
         static BITS convertToBits(BYTES);
         static std::string convertToString(BITS);
+        static std::string convertToBinaryString(BITS);
         static BYTES convertToBytes(BITS);
         static int getBinarySize(int);
         static BYTE * convertToBinary(BITS);
