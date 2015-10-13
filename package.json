@@ -23,7 +23,10 @@
   },
   "homepage": "https://github.com/ccqi/CS240-Compression",
   "dependencies": {
+    "angular": "^1.4.7",
+    "angular-ui-bootstrap": "^0.14.1",
     "body-parser": "^1.13.3",
+    "bootstrap": "^3.3.5",
     "express": "^4.13.3",
     "jshint": "^2.8.0"
   }

@@ -2,6 +2,18 @@
 
 using namespace std;
 
+//helper function
+char toHexChar(int i){
+  i %= 16;
+  if (i>0 && i<10) {
+    return i+48;
+  }
+  else {
+    return i+55;
+  }
+}
+
+//member function
 Encoding::Encoding(){
     bits_ = BITS();
     it_ =bits_.begin();
@@ -30,12 +42,6 @@ Encoding::Encoding(BYTES data):type_(BINARY){
 
 }
 Encoding::~Encoding(){
-//    if(text_!=NULL){
-//            delete[] text_;
-//    }
-//    for(int i=0;i<getSize()/8;i++){
-//        delete text_[i];
-//    }
 }
 BITS Encoding::getBits() const{
     return bits_;
@@ -116,6 +122,7 @@ BITS Encoding::convertToBits(int code, int bit_size){
     }
     return bits;
 }
+
 string Encoding::convertToString(BITS bits){
     int count = 0;
     string text;
@@ -174,6 +181,27 @@ BYTE * Encoding::convertToBinary(BITS bits){
     }
     return bytes;
 }
+
+string Encoding::convertToHexString(BITS bits){
+    int count = bits.size()/4;
+    BYTE * bytes = new BYTE[count];
+    auto it = bits.begin();
+    string hexString;
+    for(int i=0;i<count;i++){
+        BYTE c = 0;
+        for (int i=0; i < 4; i++){
+            c += (*it << i);
+            ++it;
+        }
+        hexString+=toHexChar(c);
+        if (i%2!=0) {
+          hexString+=" ";
+        }
+    }
+    return hexString;
+}
+
+
 void Encoding::setBits(BITS encoding){
     bits_ = encoding;
 }

@@ -42,6 +42,7 @@ void TextWrapper::Init(v8::Local<v8::Object> exports) {
 
   // Prototype
   Nan::SetPrototypeMethod(tpl, "encode", Encode);
+  Nan::SetPrototypeMethod(tpl, "encodeHex", EncodeHex);
   Nan::SetPrototypeMethod(tpl, "decode", Decode);
 
   constructor.Reset(tpl->GetFunction());
@@ -72,10 +73,18 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
   wrapper->component_ = setDecorator(type, wrapper->component_);
   Encoding * encoding = wrapper->component_->encode();
-  string cipherText = Encoding::convertToBinaryString(encoding->getBits());
-  
-  v8::Local<v8::String> jsText = Nan::New(cipherText).ToLocalChecked();
-  args.GetReturnValue().Set(jsText);
+  string cipherText = Encoding::convertToBinaryString(encoding->getBits()); 
+  args.GetReturnValue().Set(Nan::New(cipherText).ToLocalChecked());
+}
+
+void TextWrapper::EncodeHex(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  v8::String::Utf8Value param2(args[1]->ToString());
+  std::string type = std::string(*param2);
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  wrapper->component_ = setDecorator(type, wrapper->component_);
+  Encoding * encoding = wrapper->component_->encode();
+  string cipherText = Encoding::convertToHexString(encoding->getBits()); 
+  args.GetReturnValue().Set(Nan::New(cipherText).ToLocalChecked());
 }
 
 void TextWrapper::Decode(const Nan::FunctionCallbackInfo<v8::Value>& args) {

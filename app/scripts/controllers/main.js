@@ -4,7 +4,16 @@ angular.module('Compression').controller('MainCtrl',
   ['$scope', 
   'C9nAPI',
   function($scope, C9nAPI) {
+    $scope.submitted = false;
     $scope.method = 'BWT';
+    $scope.methods = [
+      'BWT',
+      'LZW',
+      'MTF',
+      'RLE',
+      'Huffman'
+    ]
+
     $scope.submit = function() {
       var request = {
         'method': $scope.method,
@@ -14,6 +23,7 @@ angular.module('Compression').controller('MainCtrl',
         function(response) {
           console.log('success');
           $scope.response = response.data;
+          $scope.submitted = true;
         },
         function(error) {
           console.log('compression failed ');

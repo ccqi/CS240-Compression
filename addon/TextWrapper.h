@@ -27,7 +27,8 @@ class TextWrapper : public Nan::ObjectWrap {
   ~TextWrapper();
 
   static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
-  static void Encode(const Nan::FunctionCallbackInfo<v8::Value>& args);
+  static void Encode(const Nan::FunctionCallbackInfo<v8::Value>& args); 
+  static void EncodeHex(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static void Decode(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static Nan::Persistent<v8::Function> constructor;
   static TextComponent * setDecorator(std::string type, TextComponent * text);

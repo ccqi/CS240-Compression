@@ -38,6 +38,7 @@ class Encoding
         static BITS convertToBits(int,int);
         static BITS convertToBits(std::string);
         static BITS convertToBits(BYTES);
+        static std::string convertToHexString(BITS);
         static std::string convertToString(BITS);
         static std::string convertToBinaryString(BITS);
         static BYTES convertToBytes(BITS);
