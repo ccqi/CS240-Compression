@@ -12,9 +12,10 @@ class LZWEncoder : public Decorator
         virtual ~LZWEncoder();
         Encoding * encode();
         virtual void print(std::ofstream&);
+        std::map<int, std::string> getTable() const;
 
     private:
-        std::vector<std::string> table_;
+        std::map<std::string,int> table_;
         Encoding * getDecode(Encoding*);
 };
 

@@ -26,14 +26,11 @@ var server = app.listen(3000, function () {
 
 app.post('/api/encode', function(req, res) {
   var textWrapper = new addon.TextWrapper(req.body.data);
-  var binary = textWrapper.encode(req.body.data, req.body.method);
-  var hex = textWrapper.encodeHex(req.body.data, req.body.method);
+  var encoding = textWrapper.encode(req.body.data, req.body.method);
+  console.log(encoding);
   res.setHeader('Content-Type', 'application/json');
   res.send({
     'method': req.body.method,
-    'encoding': {
-      'binary': binary,
-      'hex': hex
-    }
+    'encoding': encoding
   });
 });

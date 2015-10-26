@@ -36,7 +36,21 @@
         <uib-tabset class="form-group">
         <uib-tab ng-repeat="(key,value) in response.encoding" heading="{{key}}">
             <div class="well well-small">
-            {{value}}
+              <div ng-if="key=='table'">
+                <table class="table table-striped">
+                  <tr>
+                    <td>Index</td>
+                    <td>Value</td>
+                  </tr>
+                  <tr ng-repeat="entry in response.encoding.table">
+                    <td>{{entry.index}}</td>
+                    <td>{{entry.value}}</td>
+                  </tr>
+                </table>
+              </div>
+              <div ng-if="key=='binary' || key =='hex'">
+                {{value}}
+              </div>
             </div>
           </uib-tab>
         </uib-tabset>

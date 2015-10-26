@@ -25,7 +25,6 @@ Encoding * LZWEncoder::encode(){
     encoding_->writeBits(id_,8);
 
     string w;
-    //BITS bits;
     for(int i=0;i<plainText.size();i++){
        stringstream ss;
        ss<<(char)plainText[i];
@@ -55,14 +54,23 @@ Encoding * LZWEncoder::encode(){
             encoding_->writeBits(0,1);
         }
     }
-    //encoding_->reset();
-    //encoding_ = bits;
-
+    table_ = table;
     //check invariant
     //Encoding test = getDecode(encoding_);
     //assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;
+}
+
+map<int, string> LZWEncoder::getTable() const {
+  map<int, string> extendedTable;
+  for(auto it = table_.begin(); it!=table_.end(); ++it) {
+    if (it->second > 127) {
+      cout<<it->first<<endl;
+      extendedTable[it->second] = it->first;
+    }
+  }
+  return extendedTable;
 }
 
 Encoding * LZWEncoder::getDecode(Encoding * encoding){

@@ -42,7 +42,6 @@ void TextWrapper::Init(v8::Local<v8::Object> exports) {
 
   // Prototype
   Nan::SetPrototypeMethod(tpl, "encode", Encode);
-  Nan::SetPrototypeMethod(tpl, "encodeHex", EncodeHex);
   Nan::SetPrototypeMethod(tpl, "decode", Decode);
 
   constructor.Reset(tpl->GetFunction());
@@ -68,27 +67,43 @@ void TextWrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  // convert argument to string
   v8::String::Utf8Value param2(args[1]->ToString());
   std::string type = std::string(*param2);
-  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  wrapper->component_ = setDecorator(type, wrapper->component_);
-  Encoding * encoding = wrapper->component_->encode();
-  string cipherText = Encoding::convertToBinaryString(encoding->getBits()); 
-  args.GetReturnValue().Set(Nan::New(cipherText).ToLocalChecked());
-}
 
-void TextWrapper::EncodeHex(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-  v8::String::Utf8Value param2(args[1]->ToString());
-  std::string type = std::string(*param2);
+  // unwrap the object
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
   wrapper->component_ = setDecorator(type, wrapper->component_);
-  Encoding * encoding = wrapper->component_->encode();
-  string cipherText = Encoding::convertToHexString(encoding->getBits()); 
-  args.GetReturnValue().Set(Nan::New(cipherText).ToLocalChecked());
+  
+  TextComponent * component = wrapper->component_;
+  // encode
+  Encoding * encoding = component->encode();
+  
+  // convert result to json
+  v8::Local<v8::Object> obj = Nan::New<v8::Object>();
+  string binary = Encoding::convertToBinaryString(encoding->getBits()); 
+  string hex = Encoding::convertToHexString(encoding->getBits()); 
+  obj->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
+  obj->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
+  
+  v8::Local<v8::Array> table = Nan::New<v8::Array>();
+  if (type == "LZW") {
+    map<int, string> LZWTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
+    int i = 0;
+    for (auto it = LZWTable.begin(); it!=LZWTable.end(); ++it) {
+      v8::Local<v8::Object> entry = Nan::New<v8::Object>();
+      string s = it->second;
+      entry->Set(Nan::New("index").ToLocalChecked(), Nan::New(it->first));
+      entry->Set(Nan::New("value").ToLocalChecked(), Nan::New(it->second).ToLocalChecked());
+      table->Set(i, entry);
+      i++;
+    }
+    obj->Set(Nan::New("table").ToLocalChecked(), table);
+  }
+  
+  // set return value to object
+  args.GetReturnValue().Set(obj);
 }
 
 void TextWrapper::Decode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-  //MyObject* obj = ObjectWrap::Unwrap<MyObject>(info.Holder());
-  //obj->value_ += 1;
-  //info.GetReturnValue().Set(Nan::New(obj->value_));
 }
