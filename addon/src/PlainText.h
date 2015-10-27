@@ -9,8 +9,6 @@
 class PlainText : public TextComponent
 {
     public:
-//        PlainText(std::string);
-//        PlainText(BITS);
         PlainText(Encoding *);
         virtual ~PlainText();
         Encoding * encode();

@@ -31,10 +31,20 @@
     </div>
     
     <div ng-if="submitted">
-      <h5><b>{{response.method}} encoding</b></h5>
+      <h5><b>{{response.method}} ENCODING</b></h5>
       <div class="ouput-panel well well-small">
+        <div ng-if="method=='LZW' && info">
+          <uib-tabset class="form-group">
+            <uib-tab ng-repeat="type in ['binary','hex']" heading={{type}}>
+              <div ng-repeat="field in response.encoding.fields">
+                {{info[field][type]}}
+              </div>
+            </uib-tab>
+          </uib-tabset>
+        </div>
+        <div ng-if="method!='LZW'">
         <uib-tabset class="form-group">
-        <uib-tab ng-repeat="(key,value) in response.encoding" heading="{{key}}">
+          <uib-tab ng-repeat="(key,value) in response.encoding" heading="{{key}}">
             <div class="well well-small">
               <div ng-if="key=='table'">
                 <table class="table table-striped">
@@ -54,6 +64,7 @@
             </div>
           </uib-tab>
         </uib-tabset>
+        </div>
         <button class="btn btn-primary">Decode</button>
       </div>
     </div>

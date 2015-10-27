@@ -23,6 +23,9 @@ angular.module('Compression').controller('MainCtrl',
         function(response) {
           console.log('success');
           $scope.response = response.data;
+          if ($scope.response.encoding.data){
+            $scope.info = $scope.response.encoding.data;
+          }
           $scope.submitted = true;
         },
         function(error) {

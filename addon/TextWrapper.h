@@ -19,9 +19,12 @@
 #include "src/LZWEncoder.h"
 #include "src/Encoding.h"
 
+typedef v8::Local<v8::Array> v8Array;
+typedef v8::Local<v8::Object> v8Object;
+
 class TextWrapper : public Nan::ObjectWrap {
  public:
-  static void Init(v8::Local<v8::Object> exports);
+  static void Init(v8Object exports);
 
  private:
   explicit TextWrapper(Encoding * encoding);
@@ -32,6 +35,8 @@ class TextWrapper : public Nan::ObjectWrap {
   static void Decode(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static Nan::Persistent<v8::Function> constructor;
   static TextComponent * setDecorator(std::string type, TextComponent * text);
+  static v8Object getData(Encoding *, std::vector<std::string>);
+  static v8Array getLZWTable(std::map<int,std::string>);
   TextComponent * component_;
 };
 

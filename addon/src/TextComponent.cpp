@@ -10,12 +10,6 @@ TextComponent::~TextComponent(){
     delete encoding_;
 }
 
-//void TextComponent::setEncoding(BITS encoding){
-//    encoding_ = encoding;
-//}
-//void TextComponent::setEncoding(string encoding){
-//    encoding_ = getBits(encoding);
-//}
 void TextComponent::setEncoding(Encoding * encoding){
     encoding_ = encoding;
 }

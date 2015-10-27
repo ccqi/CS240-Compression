@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 
 typedef std::vector<bool> BITS;
 typedef unsigned char BYTE;
@@ -24,15 +25,20 @@ class Encoding
         virtual ~Encoding();
 
         //getters
+        BITS get(std::string);
+        std::vector<std::string> getFields() const;
         BITS getBits() const;
         int getSize() const;
         BYTE * getBinary() const;
         BYTES getBytes() const;
-
+        
         //setters
+        void set(std::string, BITS);
         void setBits(BITS);
+        void setFields(std::string);
         State readState();
         void reset();
+        void set(std::map<std::string, BITS>);
 
         //static conversion methods
         static BITS convertToBits(int,int);
@@ -51,12 +57,15 @@ class Encoding
         void writeBinary(std::ofstream&);
         void add(const BITS& b);
         void addToFront(const BITS& b);
-
+        
+        // operator overload
         friend double operator /(const Encoding& a,const Encoding& b);
     private:
         BITS bits_;
         BYTE * text_;
         TYPE type_;
+        std::map<std::string, BITS> data_;
+        std::vector<std::string> fields_;
         BITS::iterator it_;
 
 };

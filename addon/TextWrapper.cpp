@@ -32,7 +32,8 @@ TextComponent * TextWrapper::setDecorator(string type, TextComponent * text){
       return text;
   }
 }
-void TextWrapper::Init(v8::Local<v8::Object> exports) {
+
+void TextWrapper::Init(v8Object exports) {
   Nan::HandleScope scope;
 
   // Prepare constructor template
@@ -67,43 +68,75 @@ void TextWrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  
   // convert argument to string
   v8::String::Utf8Value param2(args[1]->ToString());
-  std::string type = std::string(*param2);
+  string type = string(*param2);
 
   // unwrap the object
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
   wrapper->component_ = setDecorator(type, wrapper->component_);
   
   TextComponent * component = wrapper->component_;
+  
   // encode
   Encoding * encoding = component->encode();
   
   // convert result to json
-  v8::Local<v8::Object> obj = Nan::New<v8::Object>();
+  v8Object obj = Nan::New<v8::Object>();
   string binary = Encoding::convertToBinaryString(encoding->getBits()); 
   string hex = Encoding::convertToHexString(encoding->getBits()); 
   obj->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
   obj->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
   
-  v8::Local<v8::Array> table = Nan::New<v8::Array>();
-  if (type == "LZW") {
-    map<int, string> LZWTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
-    int i = 0;
-    for (auto it = LZWTable.begin(); it!=LZWTable.end(); ++it) {
-      v8::Local<v8::Object> entry = Nan::New<v8::Object>();
-      string s = it->second;
-      entry->Set(Nan::New("index").ToLocalChecked(), Nan::New(it->first));
-      entry->Set(Nan::New("value").ToLocalChecked(), Nan::New(it->second).ToLocalChecked());
-      table->Set(i, entry);
-      i++;
-    }
-    obj->Set(Nan::New("table").ToLocalChecked(), table);
+  vector<string> fields = encoding->getFields();
+  v8Array arr = Nan::New<v8::Array>();
+  for(int i=0;i<fields.size();i++){
+    arr->Set(i, Nan::New(fields[i]).ToLocalChecked());
   }
-  
+  obj->Set(Nan::New("fields").ToLocalChecked(), arr);
+  // get additional properties
+  if (type == "LZW") {
+    map<int, string> table = reinterpret_cast<LZWEncoder*>(component)->getTable();
+    obj->Set(Nan::New("table").ToLocalChecked(), getLZWTable(table));
+    obj->Set(Nan::New("data").ToLocalChecked(), getData(encoding, fields));
+  }
+
   // set return value to object
   args.GetReturnValue().Set(obj);
 }
 
+v8Object TextWrapper::getData(Encoding* encoding, vector<string> fields) {
+  v8Object entry = Nan::New<v8::Object>();
+  for (auto it = fields.begin();it!=fields.end();++it) {
+    string field = *it;
+    v8Object subentry = Nan::New<v8::Object>();
+    
+    BITS bits = encoding->get(field);
+    string binary = Encoding::convertToBinaryString(bits);
+    string hex = Encoding::convertToHexString(bits);
+    subentry->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
+    subentry->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
+    
+    entry->Set(Nan::New(field).ToLocalChecked(), subentry);
+  }
+  return entry;
+}
+
+v8Array TextWrapper::getLZWTable(map<int,string> table) {
+  v8Array list = Nan::New<v8::Array>();
+  int i = 0;
+  for (auto it = table.begin(); it!=table.end(); ++it) {
+    v8Object entry = Nan::New<v8::Object>();
+    string s = it->second;
+    entry->Set(Nan::New("index").ToLocalChecked(), Nan::New(it->first));
+    entry->Set(Nan::New("value").ToLocalChecked(), Nan::New(it->second).ToLocalChecked());
+    list->Set(i, entry);
+    i++;
+  }
+  return list;
+}
+
 void TextWrapper::Decode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+
 }

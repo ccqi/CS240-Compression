@@ -5,7 +5,7 @@ using namespace std;
 //helper function
 char toHexChar(int i){
   i %= 16;
-  if (i>0 && i<10) {
+  if (i>=0 && i<10) {
     return i+48;
   }
   else {
@@ -60,6 +60,8 @@ BYTE * Encoding::getBinary() const{
     }
     return bytes;
 }
+
+
 BYTES Encoding::getBytes() const{
     int count = bits_.size()/8;
     BYTES bytes;
@@ -144,11 +146,12 @@ string Encoding::convertToString(BITS bits){
 string Encoding::convertToBinaryString(BITS bits){
   string binaryString;
   for(int i=0;i<bits.size();i++){
-    string bit = (bits[i]) ? "1" : "0";
-    binaryString += bit;
-    if ( i != 0 && i % 8 == 0){
+    if ( i!=0 && i % 8 == 0){
       binaryString+=" ";
     }
+    string bit = (bits[i]) ? "1" : "0";
+    binaryString += bit;
+    
   }
   return binaryString;
 }
@@ -189,8 +192,8 @@ string Encoding::convertToHexString(BITS bits){
     string hexString;
     for(int i=0;i<count;i++){
         BYTE c = 0;
-        for (int i=0; i < 4; i++){
-            c += (*it << i);
+        for (int j=0; j < 4; j++){
+            c += (*it << j);
             ++it;
         }
         hexString+=toHexChar(c);
@@ -205,12 +208,17 @@ string Encoding::convertToHexString(BITS bits){
 void Encoding::setBits(BITS encoding){
     bits_ = encoding;
 }
+
+void Encoding::setFields(string field) {
+  fields_.push_back(field);
+}
 //convert from index to binary bits
 void Encoding::writeBits(int code,int bit_size){
     for(int i=0;i<bit_size;i++){
-        bits_.push_back(code%2);
+        bits_.push_back(code % 2);
+        data_["data"].push_back(code % 2);
         code/=2;
-    }
+    } 
 }
 //convert a string of bits into an index
 int Encoding::readBits(int bit_size){
@@ -243,11 +251,21 @@ double operator /(const Encoding& a,const Encoding& b){
     return (double)a.bits_.size()/(double)b.bits_.size();
 }
 
-
 void Encoding::writeBinary(ofstream& os){
     text_ = convertToBinary(bits_);
     int size = bits_.size()/8;
     os.write(reinterpret_cast<const char*>(&text_[0]),size*sizeof(BYTE));
     os.close();
 }
+BITS Encoding::get(std::string key) {
+  return data_[key];
+};
 
+vector<string> Encoding::getFields() const {
+  return fields_;
+}
+
+void Encoding::set(std::string key, BITS bits) {
+  data_[key] = bits;
+  fields_.push_back(key);
+};
