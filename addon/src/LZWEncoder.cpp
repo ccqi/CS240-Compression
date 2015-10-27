@@ -23,10 +23,9 @@ Encoding * LZWEncoder::encode(){
     }
     
     BITS type = Encoding::convertToBits(id_,8);
-    encoding_->set("type", type);
+    encoding_->setFields("type");
+    encoding_->writeBits("type", id_, 8);
     encoding_->setFields("data");
-    encoding_->writeBits(id_,8);
-
     string w;
     for(int i=0;i<plainText.size();i++){
        stringstream ss;

@@ -36,9 +36,9 @@
         <div ng-if="method=='LZW' && info">
           <uib-tabset class="form-group">
             <uib-tab ng-repeat="type in ['binary','hex']" heading={{type}}>
-              <div ng-repeat="field in response.encoding.fields">
+              <span ng-repeat="field in response.encoding.fields">
                 {{info[field][type]}}
-              </div>
+              </span>
             </uib-tab>
           </uib-tabset>
         </div>

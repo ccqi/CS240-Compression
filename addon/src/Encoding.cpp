@@ -186,20 +186,24 @@ BYTE * Encoding::convertToBinary(BITS bits){
 }
 
 string Encoding::convertToHexString(BITS bits){
-    int count = bits.size()/4;
+    int count = bits.size()/8;
     BYTE * bytes = new BYTE[count];
     auto it = bits.begin();
     string hexString;
     for(int i=0;i<count;i++){
-        BYTE c = 0;
-        for (int j=0; j < 4; j++){
-            c += (*it << j);
+        BYTE c2 = 0;
+        for (int j = 0; j < 4; j++) {
+            c2 += (*it << j);
             ++it;
         }
-        hexString+=toHexChar(c);
-        if (i%2!=0) {
-          hexString+=" ";
+        BYTE c1 = 0;
+        for (int j = 0; j < 4; j++) {
+            c1 += (*it << j);
+            ++it;
         }
+        hexString+=toHexChar(c1);
+        hexString+=toHexChar(c2);
+        hexString+=" ";
     }
     return hexString;
 }
@@ -217,6 +221,15 @@ void Encoding::writeBits(int code,int bit_size){
     for(int i=0;i<bit_size;i++){
         bits_.push_back(code % 2);
         data_["data"].push_back(code % 2);
+        code/=2;
+    } 
+}
+
+//convert from index to binary bits
+void Encoding::writeBits(string field, int code,int bit_size){
+    for(int i=0;i<bit_size;i++){
+        bits_.push_back(code % 2);
+        data_[field].push_back(code % 2);
         code/=2;
     } 
 }

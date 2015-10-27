@@ -53,6 +53,7 @@ class Encoding
 
         //mutators
         void writeBits(int, int);
+        void writeBits(std::string, int, int);
         int readBits(int);
         void writeBinary(std::ofstream&);
         void add(const BITS& b);
