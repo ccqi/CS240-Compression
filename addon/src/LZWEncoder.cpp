@@ -22,9 +22,8 @@ Encoding * LZWEncoder::encode(){
         table[ss.str()]=i;
     }
     
-    BITS type = Encoding::convertToBits(id_,8);
-    encoding_->setFields("type");
-    encoding_->writeBits("type", id_, 8);
+    encoding_->setFields("header");
+    encoding_->writeBits("header", id_, 8);
     encoding_->setFields("data");
     string w;
     for(int i=0;i<plainText.size();i++){

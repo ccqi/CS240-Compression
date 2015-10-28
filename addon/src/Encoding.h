@@ -58,7 +58,7 @@ class Encoding
         void writeBinary(std::ofstream&);
         void add(const BITS& b);
         void addToFront(const BITS& b);
-        
+        void addToFront(std::string, const BITS& b);
         // operator overload
         friend double operator /(const Encoding& a,const Encoding& b);
     private:

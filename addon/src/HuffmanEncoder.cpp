@@ -99,8 +99,9 @@ Encoding * HuffmanEncoder::encode(){
         }
     }
     encoding_->addToFront(Encoding::convertToBits(padding,8));
-    encoding_->addToFront(Encoding::convertToBits(id_,8));
-//    encoding_->add(cipherBits);
+    encoding_->addToFront("header",Encoding::convertToBits(id_,8));
+    encoding_->setFields("header");
+    encoding_->setFields("data");
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;
 }

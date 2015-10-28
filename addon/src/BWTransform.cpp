@@ -9,10 +9,8 @@ BWTransform::BWTransform(TextComponent * component):Decorator(component){
 BWTransform::~BWTransform(){}
 
 Encoding * BWTransform::encode(){
-    //encoding_ = Decorator::encode();
     originalEncoding_ = Decorator::encode();
 
-     //plainCode = Decorator::encode();
     BYTES bytes = originalEncoding_->getBytes();
     int size = bytes.size()+1;
     //cout<<"Size"<<size<<endl;
@@ -32,8 +30,11 @@ Encoding * BWTransform::encode(){
         shifts.push_back(curShift);
         oldShift = curShift;
     }
+
     sort(shifts.begin(),shifts.end());
-    encoding_->writeBits(id_,8);
+    encoding_->setFields("header");
+    encoding_->writeBits("header",id_,8);
+    encoding_->setFields("data");
     for(int i=0;i<size;i++){
         encoding_->writeBits((int)(shifts[i][size-1]),8);
     }

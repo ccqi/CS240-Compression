@@ -35,7 +35,9 @@ Encoding * MTFEncoder::encode(){
 //    alpha_ = alpha;
 
     //string encoding;
-    encoding_->writeBits(id_,8);
+    encoding_->setFields("header");
+    encoding_->writeBits("header",id_,8);
+    encoding_->setFields("data");
     for(int i=0;i<plainText.length();i++){
         char c = plainText[i];
         auto it = find_if(alpha.begin(),alpha.end(),[c](char ch)->bool{
@@ -52,7 +54,6 @@ Encoding * MTFEncoder::encode(){
         ss<<c<<newAlpha;
         alpha = ss.str();
     }
-    //encoding_->reset();
     Encoding * test =getDecode(encoding_);
     //assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     compressionRatio_ = *encoding_ / *originalEncoding_;

@@ -14,7 +14,6 @@ Encoding * RLEEncoder::encode(){
     BITS cipherBits;
     if(plainBits.size()==0){
         return NULL;
-        //throw("no string to encode");
     }
     encoding_->writeBits(plainBits[0],1);
     int blockLength = 1;
@@ -53,8 +52,10 @@ Encoding * RLEEncoder::encode(){
         }
     }
     encoding_->addToFront(Encoding::convertToBits(padding,8));
-    encoding_->addToFront(Encoding::convertToBits(id_,8));
-
+    encoding_->addToFront("header",Encoding::convertToBits(id_,8));
+    
+    encoding_->setFields("header");
+    encoding_->setFields("data");
     //Encoding * test = getDecode(encoding_);
     //  assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     compressionRatio_ = *encoding_ / *originalEncoding_;

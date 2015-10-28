@@ -13,7 +13,10 @@ angular.module('Compression').controller('MainCtrl',
       'RLE',
       'Huffman'
     ]
-
+    $scope.dataChanged = function() {
+      $scope.size = $scope.data.length * 4;
+    }
+    
     $scope.submit = function() {
       var request = {
         'method': $scope.method,

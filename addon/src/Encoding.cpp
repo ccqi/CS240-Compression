@@ -81,9 +81,16 @@ int Encoding::getSize() const{
 }
 void Encoding::add(const BITS& b){
     bits_.insert(bits_.end(),b.begin(),b.end());
+    data_["data"].insert(data_["data"].end(),b.begin(),b.end());
 }
+
 void Encoding::addToFront(const BITS& b){
     bits_.insert(bits_.begin(),b.begin(),b.end());
+    data_["data"].insert(data_["data"].begin(),b.begin(),b.end());
+}
+void Encoding::addToFront(string field, const BITS& b){
+    bits_.insert(bits_.begin(),b.begin(),b.end());
+    data_[field].insert(data_[field].begin(),b.begin(),b.end());
 }
 State Encoding::readState(){
     int state = readBits(8);
