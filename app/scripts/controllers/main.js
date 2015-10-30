@@ -16,7 +16,11 @@ angular.module('Compression').controller('MainCtrl',
     $scope.dataChanged = function() {
       $scope.size = $scope.data.length * 4;
     }
-    
+    $scope.types = [
+      'binary',
+      'hex'
+    ];
+
     $scope.submit = function() {
       var request = {
         'method': $scope.method,
@@ -29,6 +33,16 @@ angular.module('Compression').controller('MainCtrl',
           if ($scope.response.encoding.data){
             $scope.info = $scope.response.encoding.data;
           }
+          if ($scope.response.method == 'BWT') {
+            $scope.types.push('text');
+          }
+          else{
+            $scope.types = [
+              'binary',
+              'hex'
+            ];
+          }
+          $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
           $scope.submitted = true;
         },
         function(error) {

@@ -46,6 +46,7 @@ class Encoding
         static BITS convertToBits(BYTES);
         static std::string convertToHexString(BITS);
         static std::string convertToString(BITS);
+        static std::string convertToText(BITS);
         static std::string convertToBinaryString(BITS);
         static BYTES convertToBytes(BITS);
         static int getBinarySize(int);
@@ -57,6 +58,7 @@ class Encoding
         int readBits(int);
         void writeBinary(std::ofstream&);
         void add(const BITS& b);
+        void add(bool b);
         void addToFront(const BITS& b);
         void addToFront(std::string, const BITS& b);
         // operator overload

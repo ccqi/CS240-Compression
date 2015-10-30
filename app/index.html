@@ -39,9 +39,13 @@
     <div ng-if="submitted">
       <h5><b>{{response.method}} ENCODING</b></h5>
       <div class="ouput-panel well well-small">
+        <div>
+          <label>Compression ratio:</label>
+          <span>{{ratio}}</span>
+        </div>
         <div ng-if="info">
           <uib-tabset class="form-group">
-            <uib-tab ng-repeat="type in ['binary','hex']" heading={{type}}>
+            <uib-tab ng-repeat="type in types" heading={{type}}>
               <span ng-repeat="field in response.encoding.fields" uib-tooltip="This byte represents the algorithm used"
                 tooltip-placement="right" tooltip-enable="field=='header'" class="{{field}}">
                 {{info[field][type]}}
@@ -60,7 +64,8 @@
                 </table>
             </uib-tab>
           </uib-tabset>
-        </div> 
+        </div>
+        
         <button class="btn btn-primary">Decode</button>
       </div>
     </div>

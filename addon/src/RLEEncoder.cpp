@@ -16,9 +16,10 @@ Encoding * RLEEncoder::encode(){
         return NULL;
     }
     encoding_->writeBits(plainBits[0],1);
+    bool curBit = plainBits[0];
     int blockLength = 1;
     for(auto it = plainBits.begin()+1;it!=plainBits.end();++it){
-
+        BITS run;
         if(*it == *(it-1) && (it != plainBits.end()-1)){
             blockLength++;
         }
@@ -26,19 +27,33 @@ Encoding * RLEEncoder::encode(){
             if(it==plainBits.end()-1){
                 blockLength++;
             }
+            BITS run;
+            for(int i=0;i<blockLength;i++){
+              run.push_back(curBit); 
+            }
+            
             int temp = blockLength;
             BITS binLength;
             while(temp>0){
                 binLength.push_back(temp%2);
                 temp/=2;
             }
+
+            BITS runLength;
             for(int i=0;i<binLength.size()-1;i++){
-                encoding_->writeBits(0,1);
+                encoding_->add(0);
+                runLength.push_back(0);
             }
+
             while(!binLength.empty()){
-                encoding_->writeBits(binLength.back(),1);
+                encoding_->add(binLength.back());
+                runLength.push_back(binLength.back());
                 binLength.pop_back();
             }
+
+            runTable_[run] = runLength;
+            runOrder_.push_back(run);
+            curBit = !curBit;
             blockLength = 1;
         }
     }
@@ -60,6 +75,14 @@ Encoding * RLEEncoder::encode(){
     //  assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;
+}
+
+map<BITS,BITS> RLEEncoder::getTable() const {
+  return runTable_;
+}
+
+vector<BITS> RLEEncoder::getRunOrder() const {
+  return runOrder_;
 }
 void RLEEncoder::print(ofstream& os){
     Decorator::print(os);

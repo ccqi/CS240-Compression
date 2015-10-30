@@ -27,10 +27,12 @@ class TextComponent
         virtual State getID() const = 0;
         void setEncoding(Encoding*);
         Encoding * getEncoding() const;
+        double getCompressionRatio() const;
     protected:
         virtual Encoding * getDecode(Encoding *) = 0;
         Encoding * encoding_;
         Encoding * originalEncoding_;
+        double compressionRatio_;
         State id_;
     private:
 

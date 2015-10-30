@@ -34,6 +34,9 @@ struct TrieCompare{
 //    printTrie(trie->one,level+1);
 //}
 
+Trie * HuffmanEncoder::getHuffmanTrie() const {
+  return huffmanTrie_;
+}
 Encoding * HuffmanEncoder::encode(){
     originalEncoding_ = Decorator::encode();
     BITS plainBits = originalEncoding_->getBits();
@@ -73,10 +76,10 @@ Encoding * HuffmanEncoder::encode(){
 
     //write trie to beginning of file for decoding
     BITS cipherBits;
-    Trie * huffmanTrie = leaves.top();
-    Trie * iter = huffmanTrie;
+    huffmanTrie_ = leaves.top();
+    Trie * iter = huffmanTrie_;
     writeTrie(iter,cipherBits);
-    iter = huffmanTrie;
+    iter = huffmanTrie_;
     encoding_->add(cipherBits);
     //get huffman codes from trie and encode
     BITS prefix;

@@ -20,11 +20,14 @@ class HuffmanEncoder : public Decorator
         virtual ~HuffmanEncoder();
         Encoding * encode();
         virtual void print(std::ofstream&);
+        Trie * getHuffmanTrie() const;
+        
     private:
         void getHuffmanCodes(Trie*, BITS&,HuffmanMap&);
         Encoding * getDecode(Encoding*);
         void writeTrie(Trie*, BITS&);
         Trie * readTrie(BITS::iterator&);
+        Trie * huffmanTrie_;
 
 };
 bool trieCompare(Trie*, Trie*);

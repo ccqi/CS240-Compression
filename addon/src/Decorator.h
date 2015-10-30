@@ -24,7 +24,6 @@ class Decorator : public TextComponent
         virtual void print(std::ofstream&);
         virtual TextComponent * decode();
         State getID() const;
-        double compressionRatio_;
     private:
         TextComponent * component_;
         virtual Encoding * getDecode(Encoding*);

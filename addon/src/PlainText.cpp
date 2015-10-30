@@ -9,6 +9,7 @@ PlainText::PlainText(Encoding * encoding){
     //encoding_->set("type", type);
     //encoding_->set("data", encoding_->getBits());
     encoding_->addToFront(type);
+    compressionRatio_ = 1.0;
 }
 
 PlainText::~PlainText(){}

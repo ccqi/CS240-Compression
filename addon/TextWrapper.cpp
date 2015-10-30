@@ -86,17 +86,28 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   v8Object result = Nan::New<v8::Object>();
   vector<string> fields = encoding->getFields();
   result->Set(Nan::New("fields").ToLocalChecked(), getFields(fields));
-  result->Set(Nan::New("data").ToLocalChecked(), getData(encoding, fields));
-  
+  result->Set(Nan::New("data").ToLocalChecked(), getData(type,encoding, fields));
+  result->Set(Nan::New("compression_ratio").ToLocalChecked(), Nan::New(component->getCompressionRatio()));
   // get additional properties
   if (type == "LZW") {
     map<int, string> table = reinterpret_cast<LZWEncoder*>(component)->getTable();
-    result->Set(Nan::New("table").ToLocalChecked(), getLZWTable(table));
+    result->Set(Nan::New("table").ToLocalChecked(), formatLZWTable(table));
+  }
+  else if (type == "RLE") {
+    map<BITS,BITS> table = reinterpret_cast<RLEEncoder*>(component)->getTable();
+    vector<BITS> order = reinterpret_cast<RLEEncoder*>(component)->getRunOrder();
+    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table, order));
+  }
+  else if (type == "Huffman") {
+    Trie * huffmanTrie = reinterpret_cast<HuffmanEncoder*>(component)->getHuffmanTrie();
+    Trie * iter = huffmanTrie;
+    result->Set(Nan::New("huffman_trie").ToLocalChecked(), formatHuffmanTrie(iter));
   }
 
   // set return value to object
   args.GetReturnValue().Set(result);
 }
+
 v8Array TextWrapper::getFields(vector<string> fields) {
   v8Array fieldArray = Nan::New<v8::Array>();
   for(int i=0;i<fields.size();i++){
@@ -104,7 +115,7 @@ v8Array TextWrapper::getFields(vector<string> fields) {
   }
   return fieldArray;
 }
-v8Object TextWrapper::getData(Encoding* encoding, vector<string> fields) {
+v8Object TextWrapper::getData(string type, Encoding* encoding, vector<string> fields) {
   v8Object entry = Nan::New<v8::Object>();
   for (auto it = fields.begin();it!=fields.end();++it) {
     string field = *it;
@@ -115,13 +126,16 @@ v8Object TextWrapper::getData(Encoding* encoding, vector<string> fields) {
     string hex = Encoding::convertToHexString(bits);
     subentry->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
     subentry->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
-    
+    if (type == "BWT") {
+      string text = Encoding::convertToText(bits);
+      subentry->Set(Nan::New("text").ToLocalChecked(), Nan::New(text).ToLocalChecked());
+    }
     entry->Set(Nan::New(field).ToLocalChecked(), subentry);
   }
   return entry;
 }
 
-v8Array TextWrapper::getLZWTable(map<int,string> table) {
+v8Array TextWrapper::formatLZWTable(map<int,string> table) {
   v8Array list = Nan::New<v8::Array>();
   int i = 0;
   for (auto it = table.begin(); it!=table.end(); ++it) {
@@ -135,6 +149,36 @@ v8Array TextWrapper::getLZWTable(map<int,string> table) {
   return list;
 }
 
+v8Array TextWrapper::formatRLETable(map<BITS,BITS> table, vector<BITS> order) {
+  v8Array list = Nan::New<v8::Array>();
+  int i = 0;
+  for (auto it = order.begin(); it!=order.end(); ++it) {
+    v8Object entry = Nan::New<v8::Object>();
+    string run = Encoding::convertToBinaryString(*it);
+    string runLength = Encoding::convertToBinaryString(table[*it]);
+    entry->Set(Nan::New("run").ToLocalChecked(), Nan::New(run).ToLocalChecked());
+    entry->Set(Nan::New("runLength").ToLocalChecked(), Nan::New(runLength).ToLocalChecked());
+    list->Set(i, entry);
+    i++;
+  }
+  return list;
+}
+
+v8Object TextWrapper::formatHuffmanTrie(Trie * trie) {
+  v8Object huffmanTrie = Nan::New<v8::Object>();
+  if(trie->isLeaf){
+    v8Object node = Nan::New<v8::Object>();
+    stringstream ss;
+    ss<< trie->c;
+    node->Set(Nan::New("char").ToLocalChecked(), Nan::New(ss.str()).ToLocalChecked());
+    node->Set(Nan::New("freq").ToLocalChecked(), Nan::New(trie->freq));
+    return node;
+  }
+  huffmanTrie->Set(Nan::New("freq").ToLocalChecked(), Nan::New(trie->freq));
+  huffmanTrie->Set(Nan::New("zero").ToLocalChecked(), formatHuffmanTrie(trie->zero));
+  huffmanTrie->Set(Nan::New("one").ToLocalChecked(), formatHuffmanTrie(trie->one));
+  return huffmanTrie;
+}
 void TextWrapper::Decode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
 
 }

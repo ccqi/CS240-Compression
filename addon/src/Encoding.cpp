@@ -79,9 +79,15 @@ BYTES Encoding::getBytes() const{
 int Encoding::getSize() const{
     return bits_.size();
 }
+
 void Encoding::add(const BITS& b){
     bits_.insert(bits_.end(),b.begin(),b.end());
     data_["data"].insert(data_["data"].end(),b.begin(),b.end());
+}
+
+void Encoding::add(bool b){
+  bits_.push_back(b);
+  data_["data"].push_back(b);
 }
 
 void Encoding::addToFront(const BITS& b){
@@ -145,6 +151,31 @@ string Encoding::convertToString(BITS bits){
             c += (bitChar[i] << i);
         }
         text += c;
+        count += 8;
+    }
+    return text;
+}
+
+string Encoding::convertToText(BITS bits){
+    int count = 0;
+    string text;
+
+    while(count<bits.size()){
+
+        BITS bitChar(8);
+        copy(bits.begin()+count,bits.begin()+count+8,bitChar.begin());
+        unsigned char c = 0;
+        for (int i=0; i < 8; i++){
+            c += (bitChar[i] << i);
+        }
+        if (c > 31 && c < 127 ) {
+          text += c;
+        }
+        else {
+          stringstream ss;
+          ss << "(" << (int)c << ")";
+          text+=ss.str();
+        }
         count += 8;
     }
     return text;

@@ -10,15 +10,9 @@ BWTransform::~BWTransform(){}
 
 Encoding * BWTransform::encode(){
     originalEncoding_ = Decorator::encode();
-
     BYTES bytes = originalEncoding_->getBytes();
-    int size = bytes.size()+1;
-    //cout<<"Size"<<size<<endl;
-//    for(int i=0;i<size-1;i++){
-//        plainText.push_back(bytes[i]);
-//    }
+    int size = bytes.size() + 1;
     bytes.push_back((BYTE)0);
-    //cout<<(int)plainText[plainText.size()];
     vector<BYTES> shifts;
     BYTES oldShift = bytes;
     for(int i=0;i<size;i++){
