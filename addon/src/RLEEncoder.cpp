@@ -41,12 +41,12 @@ Encoding * RLEEncoder::encode(){
 
             BITS runLength;
             for(int i=0;i<binLength.size()-1;i++){
-                encoding_->add(0);
+                encoding_->writeBits(0,1);
                 runLength.push_back(0);
             }
 
             while(!binLength.empty()){
-                encoding_->add(binLength.back());
+                encoding_->writeBits(binLength.back(),1);
                 runLength.push_back(binLength.back());
                 binLength.pop_back();
             }
