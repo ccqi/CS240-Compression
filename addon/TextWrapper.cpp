@@ -101,7 +101,7 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   else if (type == "Huffman") {
     Trie * huffmanTrie = reinterpret_cast<HuffmanEncoder*>(component)->getHuffmanTrie();
     Trie * iter = huffmanTrie;
-    result->Set(Nan::New("huffman_trie").ToLocalChecked(), formatHuffmanTrie(iter));
+    result->Set(Nan::New("huffmanTrie").ToLocalChecked(), formatHuffmanTrie(iter));
   }
 
   // set return value to object

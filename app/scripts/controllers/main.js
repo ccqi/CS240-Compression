@@ -29,6 +29,7 @@ angular.module('Compression').controller('MainCtrl',
       C9nAPI.encode(request).then(
         function(response) {
           console.log('success');
+          
           $scope.response = response.data;
           if ($scope.response.encoding.data){
             $scope.info = $scope.response.encoding.data;
@@ -43,6 +44,12 @@ angular.module('Compression').controller('MainCtrl',
             ];
           }
           $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
+          if ($scope.response.encoding.huffmanTrie) {
+            $scope.huffmanTree = $scope.response.encoding.huffmanTrie;
+          }
+          else {
+            $scope.huffmanTree = undefined;
+          }
           $scope.submitted = true;
         },
         function(error) {
