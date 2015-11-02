@@ -52,7 +52,7 @@
                 {{info[field][type]}}
               </span>
             </uib-tab>
-            <uib-tab ng-if="response.encoding.table" heading="table">
+            <uib-tab ng-if="response.encoding.table && response.method=='LZW'" heading="table">
                 <table class="table table-striped">
                   <tr>
                     <td>Index</td>
@@ -64,15 +64,26 @@
                   </tr>
                 </table>
             </uib-tab>
+            <uib-tab ng-if="response.encoding.table && response.method=='RLE'" heading="table">
+                <table class="table table-striped">
+                  <tr>
+                    <td>Runs</td>
+                    <td>Run length</td>
+                  </tr>
+                  <tr ng-repeat="entry in response.encoding.table">
+                    <td>{{entry.run}}</td>
+                    <td>{{entry.runLength}}</td>
+                  </tr>
+                </table>
+            </uib-tab>
             <uib-tab ng-if="huffmanTree" heading="Huffman Tree">
-              <div class="span5 tree">
-                <div ng-style="{'overflow': 'auto'}">
-                <ul class="root"><tree ng-model="huffmanTree"></tree></ul>
+              <div class="span5 tree clearfix">
+                <div ng-style="{'overflow': 'auto'}"></div>
+                <ul id="rootContainer"><tree id="root" ng-model="huffmanTree"></tree></ul>
               </div>
             </uib-tab>
           </uib-tabset>
-        </div>
-        
+        </div> 
         <button class="btn btn-primary">Decode</button>
       </div>
     </div>

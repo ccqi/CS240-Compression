@@ -37,13 +37,18 @@
 
 /*We will use ::before and ::after to draw the connectors*/
 
-.tree li::before, .tree li::after{
-  content: '';
+.tree li::before {
+  content: attr(label1);
   position: absolute; top: 0; right: 50%;
   border-top: 1px solid #000;
   width: 50%; height: 20px;
 }
+
 .tree li::after{
+  content: attr(label0);
+  position: absolute; top: 0; right: 50%;
+  border-top: 1px solid #000;
+  width: 50%; height: 20px;
   right: auto; left: 50%;
   border-left: 1px solid #000;
 }
@@ -89,7 +94,7 @@ right connector from last child*/
   border: 1px solid #000;
   padding: 5px 10px;
   text-decoration: none;
-  color: #666;
+  color: #000;
   font-family: arial, verdana, tahoma;
   font-size: 16px;
   display: inline-block;
@@ -116,5 +121,8 @@ right connector from last child*/
   border-color:  #94a0b4;
 }
 
+.tree li.parent_li>span {
+    cursor:pointer
+}
 /*Thats all. I hope you enjoyed it.
 Thanks :)*/

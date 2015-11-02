@@ -3,7 +3,8 @@
 angular.module('Compression').controller('MainCtrl', 
   ['$scope', 
   'C9nAPI',
-  function($scope, C9nAPI) {
+  '$compile',
+  function($scope, C9nAPI, $compile) {
     $scope.submitted = false;
     $scope.method = 'BWT';
     $scope.methods = [
@@ -21,6 +22,16 @@ angular.module('Compression').controller('MainCtrl',
       'hex'
     ];
 
+    $scope.$watch('huffmanTree', function() {
+      // destroy and recompile tree view whenever huffmanTree changes
+      var tree = angular.element(document.querySelector('#root'));
+      if(tree && tree.isolateScope()){
+        tree.isolateScope().$destroy();
+        var root = $compile('<tree id="root" ng-model="huffmanTree"></tree>')($scope);
+        angular.element(document.querySelector('#rootContainer')).append(root);
+      }
+    });
+
     $scope.submit = function() {
       var request = {
         'method': $scope.method,
@@ -29,7 +40,7 @@ angular.module('Compression').controller('MainCtrl',
       C9nAPI.encode(request).then(
         function(response) {
           console.log('success');
-          
+            
           $scope.response = response.data;
           if ($scope.response.encoding.data){
             $scope.info = $scope.response.encoding.data;
@@ -45,7 +56,10 @@ angular.module('Compression').controller('MainCtrl',
           }
           $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
           if ($scope.response.encoding.huffmanTrie) {
-            $scope.huffmanTree = $scope.response.encoding.huffmanTrie;
+            $scope.huffmanTree = {
+              'key': 'root',
+              'value': $scope.response.encoding.huffmanTrie
+            };
           }
           else {
             $scope.huffmanTree = undefined;
