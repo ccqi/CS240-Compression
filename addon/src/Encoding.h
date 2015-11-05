@@ -41,8 +41,8 @@ class Encoding
         void set(std::map<std::string, BITS>);
 
         //static conversion methods
-        static BITS convertToBits(int,int);
         static BITS convertToBits(std::string);
+        static BITS convertToBits(int,int);
         static BITS convertToBits(BYTES);
         static std::string convertToHexString(BITS);
         static std::string convertToString(BITS);
@@ -58,7 +58,9 @@ class Encoding
         int readBits(int);
         void writeBinary(std::ofstream&);
         void add(const BITS& b);
+        void add(std::string, const BITS& b);
         void add(bool b);
+        void add(std::string, bool b);
         void addToFront(const BITS& b);
         void addToFront(std::string, const BITS& b);
         // operator overload

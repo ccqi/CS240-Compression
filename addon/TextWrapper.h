@@ -37,7 +37,7 @@ class TextWrapper : public Nan::ObjectWrap {
   static TextComponent * setDecorator(std::string type, TextComponent * text);
   static v8Object getData(std::string,Encoding *, std::vector<std::string>);
   static v8Array getFields(std::vector<std::string>);
-  static v8Array formatLZWTable(std::map<int,std::string>);
+  static v8Object formatLZWTable(std::map<int,std::string>, std::vector<std::pair<int, BITS> >);
   static v8Array formatRLETable(std::map<BITS,BITS>, std::vector<BITS>);
   static v8Object formatHuffmanTrie(Trie*);
   TextComponent * component_;

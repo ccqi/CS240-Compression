@@ -90,8 +90,9 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   result->Set(Nan::New("compression_ratio").ToLocalChecked(), Nan::New(component->getCompressionRatio()));
   // get additional properties
   if (type == "LZW") {
-    map<int, string> table = reinterpret_cast<LZWEncoder*>(component)->getTable();
-    result->Set(Nan::New("table").ToLocalChecked(), formatLZWTable(table));
+    map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
+    vector<pair<int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
+    result->Set(Nan::New("table").ToLocalChecked(), formatLZWTable(symbolTable, outputTable));
   }
   else if (type == "RLE") {
     map<BITS,BITS> table = reinterpret_cast<RLEEncoder*>(component)->getTable();
@@ -125,7 +126,9 @@ v8Object TextWrapper::getData(string type, Encoding* encoding, vector<string> fi
     string binary = Encoding::convertToBinaryString(bits);
     string hex = Encoding::convertToHexString(bits);
     subentry->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
-    subentry->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
+    if (type != "LZW") {
+      subentry->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
+    }
     if (type == "BWT") {
       string text = Encoding::convertToText(bits);
       subentry->Set(Nan::New("text").ToLocalChecked(), Nan::New(text).ToLocalChecked());
@@ -135,18 +138,50 @@ v8Object TextWrapper::getData(string type, Encoding* encoding, vector<string> fi
   return entry;
 }
 
-v8Array TextWrapper::formatLZWTable(map<int,string> table) {
-  v8Array list = Nan::New<v8::Array>();
+v8Object TextWrapper::formatLZWTable(map<int,string> sTable, vector<pair<int, BITS> > oTable) {
+  
+  v8Object mainTable = Nan::New<v8::Object>(); 
+  
+  // output table
+  v8Object outputTable = Nan::New<v8::Object>(); 
+  v8Array oCols = Nan::New<v8::Array>();
+  oCols->Set(0, Nan::New("Binary").ToLocalChecked());
+  oCols->Set(1, Nan::New("Code").ToLocalChecked());
+  outputTable->Set(Nan::New("columns").ToLocalChecked(), oCols);
+  v8Array oList = Nan::New<v8::Array>();
   int i = 0;
-  for (auto it = table.begin(); it!=table.end(); ++it) {
+  for (auto it = oTable.begin(); it!=oTable.end(); ++it) {
     v8Object entry = Nan::New<v8::Object>();
-    string s = it->second;
-    entry->Set(Nan::New("index").ToLocalChecked(), Nan::New(it->first));
-    entry->Set(Nan::New("value").ToLocalChecked(), Nan::New(it->second).ToLocalChecked());
-    list->Set(i, entry);
+    pair<int, BITS> pair = *it;
+    int dec = pair.first;
+    string binString = Encoding::convertToBinaryString(pair.second);
+    entry->Set(Nan::New("Binary").ToLocalChecked(), Nan::New(binString).ToLocalChecked());
+    entry->Set(Nan::New("Code").ToLocalChecked(), Nan::New(dec));
+    oList->Set(i, entry);
     i++;
   }
-  return list;
+  outputTable->Set(Nan::New("entries").ToLocalChecked(), oList);
+  mainTable->Set(Nan::New("output").ToLocalChecked(), outputTable);
+
+  // symbol table
+  v8Object symbolTable = Nan::New<v8::Object>(); 
+  v8Array sCols = Nan::New<v8::Array>();
+  sCols->Set(0, Nan::New("Decimal").ToLocalChecked());
+  sCols->Set(1, Nan::New("Symbol").ToLocalChecked());
+  symbolTable->Set(Nan::New("columns").ToLocalChecked(), sCols);
+  v8Array sList = Nan::New<v8::Array>();
+  i = 0;
+  for (auto it = sTable.begin(); it!=sTable.end(); ++it) {
+    v8Object entry = Nan::New<v8::Object>();
+    string s = it->second;
+    entry->Set(Nan::New("Decimal").ToLocalChecked(), Nan::New(it->first));
+    entry->Set(Nan::New("Symbol").ToLocalChecked(), Nan::New(it->second).ToLocalChecked());
+    sList->Set(i, entry);
+    i++;
+  }
+  symbolTable->Set(Nan::New("entries").ToLocalChecked(), sList);
+  mainTable->Set(Nan::New("symbol").ToLocalChecked(), symbolTable);
+  return mainTable;
 }
 
 v8Array TextWrapper::formatRLETable(map<BITS,BITS> table, vector<BITS> order) {

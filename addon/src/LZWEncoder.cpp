@@ -24,8 +24,8 @@ Encoding * LZWEncoder::encode(){
     
     encoding_->setFields("header");
     encoding_->writeBits("header", id_, 8);
-    encoding_->setFields("data");
     string w;
+    int counter = 0;
     for(int i=0;i<plainText.size();i++){
        stringstream ss;
        ss<<(char)plainText[i];
@@ -33,8 +33,13 @@ Encoding * LZWEncoder::encode(){
 
        if(table.find(w+key)== table.end()){
             int code = table[w];
-            encoding_->writeBits(code,Encoding::getBinarySize(table.size()-1));
-
+            BITS binCode = Encoding::convertToBits(code, Encoding::getBinarySize(table.size()-1));
+            stringstream ss;
+            ss << "key" << counter;
+            encoding_->add(ss.str(), binCode);
+            encoding_->setFields(ss.str());
+            counter++;
+            output_.push_back(make_pair(code, binCode));
             table[w+key] = table.size()-1;
             w = key;
        }
@@ -42,19 +47,29 @@ Encoding * LZWEncoder::encode(){
             w = w+key;
        }
     }
-    encoding_->writeBits(table[w],Encoding::getBinarySize(table.size()-1));
+    BITS binCode = Encoding::convertToBits(table[w], Encoding::getBinarySize(table.size()-1));
+    stringstream ss;
+    ss << "key" << counter;
+    encoding_->add(ss.str(),binCode);
+    encoding_->setFields(ss.str());
+    output_.push_back(make_pair(table[w], binCode));
 
     //write stop bites
-    encoding_->writeBits(0,Encoding::getBinarySize(table.size()-1));
+    binCode = Encoding::convertToBits(0, Encoding::getBinarySize(table.size()-1));
+    encoding_->add("stop", binCode);
+    encoding_->setFields("stop");
+    output_.push_back(make_pair(0, binCode));
 
     //pad a non-multiple of 8 with zeros
     int bitsize =encoding_->getSize();
+    cout<<"size"<<bitsize<<endl;
     if(bitsize % 8 > 0){
         int padding = 8 - bitsize % 8;
         for(int i=0;i<padding;i++){
-            encoding_->writeBits(0,1);
+            encoding_->writeBits("padding",0,1);
         }
     }
+    encoding_->setFields("padding");
     table_ = table;
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;
@@ -68,6 +83,10 @@ map<int, string> LZWEncoder::getTable() const {
     }
   }
   return extendedTable;
+}
+
+vector<pair<int, BITS> > LZWEncoder::getOutput() const {
+  return output_;
 }
 
 Encoding * LZWEncoder::getDecode(Encoding * encoding){

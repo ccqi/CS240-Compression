@@ -85,10 +85,30 @@ void Encoding::add(const BITS& b){
     data_["data"].insert(data_["data"].end(),b.begin(),b.end());
 }
 
+void Encoding::add(string field, const BITS& b){
+    bits_.insert(bits_.end(),b.begin(),b.end());
+    data_[field].insert(data_[field].end(),b.begin(),b.end());
+}
+
 void Encoding::add(bool b){
   bits_.push_back(b);
   data_["data"].push_back(b);
 }
+
+void Encoding::add(string field, bool b){
+  bits_.push_back(b);
+  data_[field].push_back(b);
+}
+
+BITS Encoding::convertToBits(int code, int bit_size) {
+  BITS bits;
+  for (int i = 0; i < bit_size; i++) {
+    bits.push_back(code % 2);
+    code /= 2;
+  }
+  return bits;
+}
+
 
 void Encoding::addToFront(const BITS& b){
     bits_.insert(bits_.begin(),b.begin(),b.end());
@@ -128,14 +148,6 @@ BITS Encoding::convertToBits(BYTES plainText){
         count ++;
     }
     return binaryText;
-}
-BITS Encoding::convertToBits(int code, int bit_size){
-    BITS bits;
-    for(int i=0;i<bit_size;i++){
-        bits.push_back(code%2);
-        code/=2;
-    }
-    return bits;
 }
 
 string Encoding::convertToString(BITS bits){
@@ -184,9 +196,6 @@ string Encoding::convertToText(BITS bits){
 string Encoding::convertToBinaryString(BITS bits){
   string binaryString;
   for(int i=0;i<bits.size();i++){
-    if ( i!=0 && i % 8 == 0){
-      binaryString+=" ";
-    }
     string bit = (bits[i]) ? "1" : "0";
     binaryString += bit;
     
@@ -254,6 +263,7 @@ void Encoding::setBits(BITS encoding){
 void Encoding::setFields(string field) {
   fields_.push_back(field);
 }
+
 //convert from index to binary bits
 void Encoding::writeBits(int code,int bit_size){
     for(int i=0;i<bit_size;i++){

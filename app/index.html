@@ -8,8 +8,8 @@
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/services/API.js"></script>
     <script src="scripts/directives/tree.js"></script>
-    <link rel="stylesheet" type="styles/css" href="styles/styles.css">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="styles/css" href="styles/styles.css">
   </head>
   <body ng-controller="MainCtrl">
     <div class="container-fluid">
@@ -45,45 +45,77 @@
           <span>{{ratio}}</span>
         </div>
         <div ng-if="info">
-          <uib-tabset class="form-group">
+        <div class="row">
+          <div class="col-md-6">
+          <uib-tabset>
             <uib-tab ng-repeat="type in types" heading={{type}}>
               <span ng-repeat="field in response.encoding.fields" uib-tooltip="This byte represents the algorithm used"
-                tooltip-placement="right" tooltip-enable="field=='header'" class="{{field}}">
-                {{info[field][type]}}
-              </span>
+                tooltip-placement="right" tooltip-enable="field=='header'" class="{{field}}">{{info[field][type]}}</span>
             </uib-tab>
-            <uib-tab ng-if="response.encoding.table && response.method=='LZW'" heading="table">
-                <table class="table table-striped">
-                  <tr>
-                    <td>Index</td>
-                    <td>Value</td>
-                  </tr>
-                  <tr ng-repeat="entry in response.encoding.table">
-                    <td>{{entry.index}}</td>
-                    <td>{{entry.value}}</td>
-                  </tr>
-                </table>
-            </uib-tab>
-            <uib-tab ng-if="response.encoding.table && response.method=='RLE'" heading="table">
-                <table class="table table-striped">
-                  <tr>
-                    <td>Runs</td>
-                    <td>Run length</td>
-                  </tr>
-                  <tr ng-repeat="entry in response.encoding.table">
-                    <td>{{entry.run}}</td>
-                    <td>{{entry.runLength}}</td>
-                  </tr>
-                </table>
-            </uib-tab>
-            <uib-tab ng-if="huffmanTree" heading="Huffman Tree">
-              <div class="span5 tree clearfix">
-                <div ng-style="{'overflow': 'auto'}"></div>
-                <ul id="rootContainer"><tree id="root" ng-model="huffmanTree"></tree></ul>
-              </div>
-            </uib-tab>
+            
           </uib-tabset>
-        </div> 
+        </div>
+        <div ng-if="response.encoding.table && response.method=='LZW'">
+          <div class="col-md-6 transparent panel panel-default" >
+            <div class="panel-heading">LZW Table</div>
+            <div class="row">
+            <div class="col-md-6">
+            <table class="table table-striped table-hover">
+              <tr>
+                <td ng-repeat="col in response.encoding.table.output.columns">
+                {{col}}
+                </td>
+              </tr>
+              <tr ng-repeat="entry in response.encoding.table.output.entries">
+                <td ng-repeat="col in response.encoding.table.output.columns">
+                {{entry[col]}}
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <table class="table table-striped table-hover">
+              <tr>
+                <td ng-repeat="col in response.encoding.table.symbol.columns">
+                {{col}}
+                </td>
+              </tr>
+              <tr ng-repeat="entry in response.encoding.table.symbol.entries">
+                <td ng-repeat="col in response.encoding.table.symbol.columns">
+                {{entry[col]}}
+                </td>
+              </tr>
+            </table>
+          </div>
+          </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          
+          <div class="panel panel-default panel-transparent" ng-if="response.encoding.table && response.method=='RLE'">
+            <div class="panel-heading">RLE Table</div>
+            <table class="table table-striped table-hover">
+              <tr>
+                <td>Runs</td>
+                <td>Run length</td>
+              </tr>
+              <tr ng-repeat="entry in response.encoding.table">
+                <td>{{entry.run}}</td>
+                <td>{{entry.runLength}}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="panel panel-default"  ng-if="huffmanTree">
+            <div class="panel-heading">Huffman Tree</div>
+            <div class="tree clearfix">
+              <div ng-style="{'overflow': 'auto'}"></div>
+              <ul id="rootContainer"><tree id="root" ng-model="huffmanTree"></tree></ul>
+            </div>
+          </div>
+          </div>
+        </div>
+        </div>
         <button class="btn btn-primary">Decode</button>
       </div>
     </div>
