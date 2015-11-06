@@ -35,7 +35,7 @@ class TextWrapper : public Nan::ObjectWrap {
   static void Decode(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static Nan::Persistent<v8::Function> constructor;
   static TextComponent * setDecorator(std::string type, TextComponent * text);
-  static v8Object getData(std::string,Encoding *, std::vector<std::string>);
+  static v8Array getData(std::string,Encoding *);
   static v8Array getFields(std::vector<std::string>);
   static v8Object formatLZWTable(std::map<int,std::string>, std::vector<std::pair<int, BITS> >);
   static v8Array formatRLETable(std::map<BITS,BITS>, std::vector<BITS>);

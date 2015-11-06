@@ -31,7 +31,22 @@ angular.module('Compression').controller('MainCtrl',
         angular.element(document.querySelector('#rootContainer')).append(root);
       }
     });
+   
+    var changeColor = function(elms, color) {
+      for (var i = 0; i <  elms.length; i++ ) {
+        elms[i].style.backgroundColor = color;
+      }
+    }
 
+    $scope.mouseOver = function(className) {
+      var elms = document.getElementsByClassName(className);
+      changeColor(elms, "yellow");
+    };
+
+    $scope.mouseLeave = function(className) {
+      var elms = document.getElementsByClassName(className);
+      changeColor(elms, "inherit");
+    };
     $scope.submit = function() {
       var request = {
         'method': $scope.method,

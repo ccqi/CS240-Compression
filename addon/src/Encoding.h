@@ -8,10 +8,13 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <deque>
+#include <utility>
 
 typedef std::vector<bool> BITS;
 typedef unsigned char BYTE;
 typedef std::vector<BYTE> BYTES;
+typedef std::deque <std::pair<std::string, BITS> > DATA;
 enum State {NONE, PLAIN, HUFFMAN, BWT, RLE, MTF, LZW,ENCODE, DECODE, QUIT};
 enum TYPE {TEXT, BINARY, HEX};
 
@@ -25,7 +28,8 @@ class Encoding
         virtual ~Encoding();
 
         //getters
-        BITS get(std::string);
+        std::pair<std::string, BITS> get(int) const;
+        int size() const;
         std::vector<std::string> getFields() const;
         BITS getBits() const;
         int getSize() const;
@@ -33,7 +37,6 @@ class Encoding
         BYTES getBytes() const;
         
         //setters
-        void set(std::string, BITS);
         void setBits(BITS);
         void setFields(std::string);
         State readState();
@@ -69,7 +72,7 @@ class Encoding
         BITS bits_;
         BYTE * text_;
         TYPE type_;
-        std::map<std::string, BITS> data_;
+        DATA data_;
         std::vector<std::string> fields_;
         BITS::iterator it_;
 

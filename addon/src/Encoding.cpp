@@ -82,22 +82,24 @@ int Encoding::getSize() const{
 
 void Encoding::add(const BITS& b){
     bits_.insert(bits_.end(),b.begin(),b.end());
-    data_["data"].insert(data_["data"].end(),b.begin(),b.end());
+    BITS bits;
+    bits.insert(bits.end(),b.begin(),b.end());
+    data_.push_back(make_pair("data", bits));
 }
 
 void Encoding::add(string field, const BITS& b){
     bits_.insert(bits_.end(),b.begin(),b.end());
-    data_[field].insert(data_[field].end(),b.begin(),b.end());
+    BITS bits;
+    bits.insert(bits.end(),b.begin(),b.end());
+    data_.push_back(make_pair(field, bits));
 }
 
 void Encoding::add(bool b){
   bits_.push_back(b);
-  data_["data"].push_back(b);
 }
 
 void Encoding::add(string field, bool b){
   bits_.push_back(b);
-  data_[field].push_back(b);
 }
 
 BITS Encoding::convertToBits(int code, int bit_size) {
@@ -112,11 +114,15 @@ BITS Encoding::convertToBits(int code, int bit_size) {
 
 void Encoding::addToFront(const BITS& b){
     bits_.insert(bits_.begin(),b.begin(),b.end());
-    data_["data"].insert(data_["data"].begin(),b.begin(),b.end());
+    BITS bits; 
+    bits.insert(bits.begin(),b.begin(),b.end());
+    data_.push_back(make_pair("data", bits));
 }
 void Encoding::addToFront(string field, const BITS& b){
     bits_.insert(bits_.begin(),b.begin(),b.end());
-    data_[field].insert(data_[field].begin(),b.begin(),b.end());
+    BITS bits;
+    bits.insert(bits.begin(),b.begin(),b.end());
+    data_.push_back(make_pair(field, bits));
 }
 State Encoding::readState(){
     int state = readBits(8);
@@ -266,20 +272,24 @@ void Encoding::setFields(string field) {
 
 //convert from index to binary bits
 void Encoding::writeBits(int code,int bit_size){
+    BITS bits;
     for(int i=0;i<bit_size;i++){
         bits_.push_back(code % 2);
-        data_["data"].push_back(code % 2);
+        bits.push_back(code % 2);
         code/=2;
-    } 
+    }
+    data_.push_back(make_pair("data", bits));
 }
 
 //convert from index to binary bits
 void Encoding::writeBits(string field, int code,int bit_size){
+    BITS bits;
     for(int i=0;i<bit_size;i++){
         bits_.push_back(code % 2);
-        data_[field].push_back(code % 2);
+        bits.push_back(code % 2);
         code/=2;
     } 
+    data_.push_back(make_pair(field,bits));
 }
 //convert a string of bits into an index
 int Encoding::readBits(int bit_size){
@@ -318,15 +328,15 @@ void Encoding::writeBinary(ofstream& os){
     os.write(reinterpret_cast<const char*>(&text_[0]),size*sizeof(BYTE));
     os.close();
 }
-BITS Encoding::get(std::string key) {
-  return data_[key];
-};
 
 vector<string> Encoding::getFields() const {
   return fields_;
 }
 
-void Encoding::set(std::string key, BITS bits) {
-  data_[key] = bits;
-  fields_.push_back(key);
-};
+pair<string,BITS> Encoding::get(int i) const{
+  return data_[i];
+}
+
+int Encoding::size() const {
+  return data_.size();
+}

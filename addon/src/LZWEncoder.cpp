@@ -22,7 +22,6 @@ Encoding * LZWEncoder::encode(){
         table[ss.str()]=i;
     }
     
-    encoding_->setFields("header");
     encoding_->writeBits("header", id_, 8);
     string w;
     int counter = 0;
@@ -35,9 +34,8 @@ Encoding * LZWEncoder::encode(){
             int code = table[w];
             BITS binCode = Encoding::convertToBits(code, Encoding::getBinarySize(table.size()-1));
             stringstream ss;
-            ss << "key" << counter;
+            ss << code;
             encoding_->add(ss.str(), binCode);
-            encoding_->setFields(ss.str());
             counter++;
             output_.push_back(make_pair(code, binCode));
             table[w+key] = table.size()-1;
@@ -49,15 +47,13 @@ Encoding * LZWEncoder::encode(){
     }
     BITS binCode = Encoding::convertToBits(table[w], Encoding::getBinarySize(table.size()-1));
     stringstream ss;
-    ss << "key" << counter;
+    ss << table[w];
     encoding_->add(ss.str(),binCode);
-    encoding_->setFields(ss.str());
     output_.push_back(make_pair(table[w], binCode));
 
     //write stop bites
     binCode = Encoding::convertToBits(0, Encoding::getBinarySize(table.size()-1));
     encoding_->add("stop", binCode);
-    encoding_->setFields("stop");
     output_.push_back(make_pair(0, binCode));
 
     //pad a non-multiple of 8 with zeros
@@ -69,7 +65,6 @@ Encoding * LZWEncoder::encode(){
             encoding_->writeBits("padding",0,1);
         }
     }
-    encoding_->setFields("padding");
     table_ = table;
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;

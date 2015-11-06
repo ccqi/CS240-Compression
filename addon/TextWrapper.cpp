@@ -85,8 +85,7 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   // convert result to json
   v8Object result = Nan::New<v8::Object>();
   vector<string> fields = encoding->getFields();
-  result->Set(Nan::New("fields").ToLocalChecked(), getFields(fields));
-  result->Set(Nan::New("data").ToLocalChecked(), getData(type,encoding, fields));
+  result->Set(Nan::New("data").ToLocalChecked(), getData(type, encoding));
   result->Set(Nan::New("compression_ratio").ToLocalChecked(), Nan::New(component->getCompressionRatio()));
   // get additional properties
   if (type == "LZW") {
@@ -116,26 +115,34 @@ v8Array TextWrapper::getFields(vector<string> fields) {
   }
   return fieldArray;
 }
-v8Object TextWrapper::getData(string type, Encoding* encoding, vector<string> fields) {
-  v8Object entry = Nan::New<v8::Object>();
-  for (auto it = fields.begin();it!=fields.end();++it) {
-    string field = *it;
-    v8Object subentry = Nan::New<v8::Object>();
-    
-    BITS bits = encoding->get(field);
+v8Array TextWrapper::getData(string type, Encoding* encoding) {
+  v8Array data = Nan::New<v8::Array>();
+  int repeat = 0;
+  for (int i = 0; i < encoding->size(); i++) {
+    v8Object entry = Nan::New<v8::Object>();
+    pair<string, BITS> entryData = encoding->get(i);
+    stringstream ss;
+    ss << entryData.first;
+    repeat = (i > 0 && entryData.first != encoding->get(i-1).first) ? 1 : repeat + 1;
+    if (repeat > 1) {
+      ss << "_" << repeat;
+    }
+    string field = ss.str();
+    BITS bits = entryData.second;
     string binary = Encoding::convertToBinaryString(bits);
     string hex = Encoding::convertToHexString(bits);
-    subentry->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
+    entry->Set(Nan::New("binary").ToLocalChecked(), Nan::New(binary).ToLocalChecked());
     if (type != "LZW") {
-      subentry->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
+      //entry->Set(Nan::New("hex").ToLocalChecked(), Nan::New(hex).ToLocalChecked());
     }
     if (type == "BWT") {
       string text = Encoding::convertToText(bits);
-      subentry->Set(Nan::New("text").ToLocalChecked(), Nan::New(text).ToLocalChecked());
+      entry->Set(Nan::New("text").ToLocalChecked(), Nan::New(text).ToLocalChecked());
     }
-    entry->Set(Nan::New(field).ToLocalChecked(), subentry);
+    entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(field).ToLocalChecked());
+    data->Set(i, entry);
   }
-  return entry;
+  return data;
 }
 
 v8Object TextWrapper::formatLZWTable(map<int,string> sTable, vector<pair<int, BITS> > oTable) {
