@@ -34,12 +34,15 @@ Encoding * LZWEncoder::encode(){
             int code = table[w];
             BITS binCode = Encoding::convertToBits(code, Encoding::getBinarySize(table.size()-1));
             stringstream ss;
-            ss << code;
+            ss << "lzw";
+            if (counter > 0) {
+              ss << "_" << (counter + 1);
+            }
             encoding_->add(ss.str(), binCode);
-            counter++;
-            output_.push_back(make_pair(code, binCode));
+            output_.push_back(make_tuple(ss.str(),code, binCode));
             table[w+key] = table.size()-1;
             w = key;
+            counter++;
        }
        else{
             w = w+key;
@@ -47,14 +50,17 @@ Encoding * LZWEncoder::encode(){
     }
     BITS binCode = Encoding::convertToBits(table[w], Encoding::getBinarySize(table.size()-1));
     stringstream ss;
-    ss << table[w];
+    ss << "lzw";
+    if (counter > 0) {
+      ss << "_" << (counter + 1);
+    }
     encoding_->add(ss.str(),binCode);
-    output_.push_back(make_pair(table[w], binCode));
+    output_.push_back(make_tuple(ss.str(),table[w], binCode));
 
     //write stop bites
     binCode = Encoding::convertToBits(0, Encoding::getBinarySize(table.size()-1));
     encoding_->add("stop", binCode);
-    output_.push_back(make_pair(0, binCode));
+    output_.push_back(make_tuple("stop", 0, binCode));
 
     //pad a non-multiple of 8 with zeros
     int bitsize =encoding_->getSize();
@@ -80,7 +86,7 @@ map<int, string> LZWEncoder::getTable() const {
   return extendedTable;
 }
 
-vector<pair<int, BITS> > LZWEncoder::getOutput() const {
+deque<tuple<string, int, BITS> > LZWEncoder::getOutput() const {
   return output_;
 }
 

@@ -15,9 +15,10 @@ Encoding * RLEEncoder::encode(){
     if(plainBits.size()==0){
         return NULL;
     }
-    encoding_->writeBits(plainBits[0],1);
+    encoding_->writeBits("sign",plainBits[0],1);
     bool curBit = plainBits[0];
     int blockLength = 1;
+    int count = 0;
     for(auto it = plainBits.begin()+1;it!=plainBits.end();++it){
         BITS run;
         if(*it == *(it-1) && (it != plainBits.end()-1)){
@@ -41,43 +42,49 @@ Encoding * RLEEncoder::encode(){
 
             BITS runLength;
             for(int i=0;i<binLength.size()-1;i++){
-                encoding_->writeBits(0,1);
                 runLength.push_back(0);
             }
 
             while(!binLength.empty()){
-                encoding_->writeBits(binLength.back(),1);
                 runLength.push_back(binLength.back());
                 binLength.pop_back();
             }
-
-            runTable_[run] = runLength;
+            stringstream ss;
+            ss << "rle";
+            if(count > 0) {
+              ss << (count + 1);
+            }
+            string key = ss.str();
+            encoding_->add(key, runLength);
+            runTable_.push_back(make_tuple(key, run,runLength));
             runOrder_.push_back(run);
             curBit = !curBit;
             blockLength = 1;
+            count++;
         }
     }
     //pad a non-multiple of 8 with zeros
     int bitsize =encoding_->getSize();
+
     int padding = 0;
+    BITS paddingBits;
     if(bitsize % 8 > 0){
         padding = 8 - bitsize % 8;
         for(int i=0;i<padding;i++){
-            encoding_->writeBits(0,1);
+            paddingBits.push_back(0);
         }
     }
-    encoding_->addToFront(Encoding::convertToBits(padding,8));
+    encoding_->add("padding", paddingBits);
+    encoding_->addToFront("paddingNum",Encoding::convertToBits(padding,8));
     encoding_->addToFront("header",Encoding::convertToBits(id_,8));
     
-    encoding_->setFields("header");
-    encoding_->setFields("data");
     //Encoding * test = getDecode(encoding_);
     //  assert(equal(plainBits.begin(),plainBits.end(),getDecode(encoding_).begin()));
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;
 }
 
-map<BITS,BITS> RLEEncoder::getTable() const {
+deque<tuple<string, BITS, BITS> > RLEEncoder::getTable() const {
   return runTable_;
 }
 

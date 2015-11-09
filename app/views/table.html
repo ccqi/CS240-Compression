@@ -1,0 +1,16 @@
+<table class="table table-striped table-hover table-display">
+  <tr>
+    <td ng-repeat="col in table.columns">
+    {{col}}
+    </td>
+  </tr>
+  <tr ng-repeat="entry in table.entries">
+    <td 
+      ng-repeat="col in table.columns"
+      class="{{entry.field}}"
+      ng-Mouseover="highlight.mouseOver($parent.type, entry)"
+      ng-Mouseleave="highlight.mouseLeave($parent.type, entry)">
+      {{entry[col]}}
+    </td>
+  </tr>
+</table>

@@ -90,13 +90,12 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   // get additional properties
   if (type == "LZW") {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
-    vector<pair<int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
+    deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
     result->Set(Nan::New("table").ToLocalChecked(), formatLZWTable(symbolTable, outputTable));
   }
   else if (type == "RLE") {
-    map<BITS,BITS> table = reinterpret_cast<RLEEncoder*>(component)->getTable();
-    vector<BITS> order = reinterpret_cast<RLEEncoder*>(component)->getRunOrder();
-    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table, order));
+    deque<tuple<string,BITS,BITS> > table = reinterpret_cast<RLEEncoder*>(component)->getTable();
+    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table));
   }
   else if (type == "Huffman") {
     Trie * huffmanTrie = reinterpret_cast<HuffmanEncoder*>(component)->getHuffmanTrie();
@@ -117,16 +116,14 @@ v8Array TextWrapper::getFields(vector<string> fields) {
 }
 v8Array TextWrapper::getData(string type, Encoding* encoding) {
   v8Array data = Nan::New<v8::Array>();
-  int repeat = 0;
   for (int i = 0; i < encoding->size(); i++) {
     v8Object entry = Nan::New<v8::Object>();
     pair<string, BITS> entryData = encoding->get(i);
     stringstream ss;
     ss << entryData.first;
-    repeat = (i > 0 && entryData.first != encoding->get(i-1).first) ? 1 : repeat + 1;
-    if (repeat > 1) {
-      ss << "_" << repeat;
-    }
+    /*if (i > 1) {
+      ss << "_" << repeat + 1;
+    }*/
     string field = ss.str();
     BITS bits = entryData.second;
     string binary = Encoding::convertToBinaryString(bits);
@@ -145,7 +142,7 @@ v8Array TextWrapper::getData(string type, Encoding* encoding) {
   return data;
 }
 
-v8Object TextWrapper::formatLZWTable(map<int,string> sTable, vector<pair<int, BITS> > oTable) {
+v8Object TextWrapper::formatLZWTable(map<int,string> sTable, deque<tuple<string,int, BITS> > oTable) {
   
   v8Object mainTable = Nan::New<v8::Object>(); 
   
@@ -159,9 +156,11 @@ v8Object TextWrapper::formatLZWTable(map<int,string> sTable, vector<pair<int, BI
   int i = 0;
   for (auto it = oTable.begin(); it!=oTable.end(); ++it) {
     v8Object entry = Nan::New<v8::Object>();
-    pair<int, BITS> pair = *it;
-    int dec = pair.first;
-    string binString = Encoding::convertToBinaryString(pair.second);
+    tuple<string, int, BITS> tuple = *it;
+    string key = get<0>(tuple);
+    int dec = get<1>(tuple);
+    string binString = Encoding::convertToBinaryString(get<2>(tuple));
+    entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(key).ToLocalChecked());
     entry->Set(Nan::New("Binary").ToLocalChecked(), Nan::New(binString).ToLocalChecked());
     entry->Set(Nan::New("Code").ToLocalChecked(), Nan::New(dec));
     oList->Set(i, entry);
@@ -191,9 +190,30 @@ v8Object TextWrapper::formatLZWTable(map<int,string> sTable, vector<pair<int, BI
   return mainTable;
 }
 
-v8Array TextWrapper::formatRLETable(map<BITS,BITS> table, vector<BITS> order) {
-  v8Array list = Nan::New<v8::Array>();
+v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table) {
+  // output table
+  v8Object rleTable = Nan::New<v8::Object>(); 
+  v8Array cols = Nan::New<v8::Array>();
+  
+  cols->Set(0, Nan::New("Run").ToLocalChecked());
+  cols->Set(1, Nan::New("RunLength").ToLocalChecked());
+  rleTable->Set(Nan::New("columns").ToLocalChecked(), cols);
+  v8Array entries = Nan::New<v8::Array>();
   int i = 0;
+  for (auto it = table.begin(); it!=table.end(); ++it) {
+    v8Object entry = Nan::New<v8::Object>();
+    tuple<string, BITS, BITS> tuple = *it;
+    string key = get<0>(tuple);
+    string run = Encoding::convertToBinaryString(get<1>(tuple));
+    string runLength = Encoding::convertToBinaryString(get<2>(tuple));
+    entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(key).ToLocalChecked());
+    entry->Set(Nan::New("Run").ToLocalChecked(), Nan::New(run).ToLocalChecked());
+    entry->Set(Nan::New("RunLength").ToLocalChecked(), Nan::New(runLength).ToLocalChecked());
+    entries->Set(i, entry);
+    i++;
+  }
+  rleTable->Set(Nan::New("entries").ToLocalChecked(), entries);
+  /*int i = 0;
   for (auto it = order.begin(); it!=order.end(); ++it) {
     v8Object entry = Nan::New<v8::Object>();
     string run = Encoding::convertToBinaryString(*it);
@@ -202,8 +222,8 @@ v8Array TextWrapper::formatRLETable(map<BITS,BITS> table, vector<BITS> order) {
     entry->Set(Nan::New("runLength").ToLocalChecked(), Nan::New(runLength).ToLocalChecked());
     list->Set(i, entry);
     i++;
-  }
-  return list;
+  }*/
+  return rleTable;
 }
 
 v8Object TextWrapper::formatHuffmanTrie(Trie * trie) {

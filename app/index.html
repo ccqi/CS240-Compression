@@ -4,10 +4,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-route.min.js"></script>
     <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.14.1.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/services/API.js"></script>
+    <script src="scripts/services/highlight.js"></script>
+    <script src="scripts/directives/data.js"></script>
     <script src="scripts/directives/tree.js"></script>
+    <script src="scripts/directives/table.js"></script>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="styles/css" href="styles/styles.css">
   </head>
@@ -49,17 +53,8 @@
           <div class="col-md-6">
           <uib-tabset class="text-display">
             <uib-tab  ng-repeat="type in types" heading={{type}}>
-              <span 
-                ng-repeat="entry in info"
-                uib-tooltip="This byte represents the algorithm used"
-                tooltip-placement="right" 
-                tooltip-enable="entry.field=='header'" 
-                class="{{entry[type]}}"
-                ng-Mouseover="mouseOver(entry.binary)"
-                ng-Mouseleave="mouseLeave(entry.binary)"
-              >
-              {{entry[type]}}
-              </span></uib-tab>
+              <data type="response.method" ng-model="info"></data>
+            </uib-tab>
             
           </uib-tabset>
         </div>
@@ -67,62 +62,31 @@
           <div class="col-md-6 transparent panel panel-default" >
             <div class="panel-heading heading-big">LZW Table</div>
             <div class="row">
-            <div class="col-md-6">
-            <table class="table table-striped table-hover table-display">
-              <tr>
-                <td ng-repeat="col in response.encoding.table.output.columns">
-                {{col}}
-                </td>
-              </tr>
-              <tr ng-repeat="entry in response.encoding.table.output.entries">
-                <td 
-                  ng-repeat="col in response.encoding.table.output.columns"
-                  class="{{entry[col]}}"
-                  ng-Mouseover="mouseOver(entry[col])"
-                  ng-Mouseleave="mouseLeave(entry[col])">
-                {{entry[col]}}
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div class="col-md-6">
-            <table class="table table-striped table-hover table-display">
-              <tr>
-                <td ng-repeat="col in response.encoding.table.symbol.columns">
-                {{col}}
-                </td>
-              </tr>
-              <tr ng-repeat="entry in response.encoding.table.symbol.entries">
-                <td ng-repeat="col in response.encoding.table.symbol.columns">
-                {{entry[col]}}
-                </td>
-              </tr>
-            </table>
-          </div>
-          </div>
+              <div class="col-md-6">
+                <encoding-table type="LZW" ng-model="response.encoding.table.output">
+                </encoding-table>
+              </div>
+              <div class="col-md-6">
+                <encoding-table type="LZW" ng-model="response.encoding.table.symbol">
+                </encoding-table>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="col-md-6">
           
           <div class="panel panel-default panel-transparent" ng-if="response.encoding.table && response.method=='RLE'">
-            <div class="panel-heading">RLE Table</div>
-            <table class="table table-striped table-hover">
-              <tr>
-                <td>Runs</td>
-                <td>Run length</td>
-              </tr>
-              <tr ng-repeat="entry in response.encoding.table">
-                <td>{{entry.run}}</td>
-                <td>{{entry.runLength}}</td>
-              </tr>
-            </table>
+            <div class="panel-heading heading-big">RLE Table</div>
+            <encoding-table type="response.method" ng-model="response.encoding.table"></encoding-table> 
           </div>
           <div class="panel panel-default"  ng-if="huffmanTree">
-            <div class="panel-heading">Huffman Tree</div>
+            <div class="panel-heading heading-big">Huffman Tree</div>
             <div class="tree clearfix">
               <div ng-style="{'overflow': 'auto'}"></div>
-              <ul id="rootContainer"><tree id="root" ng-model="huffmanTree"></tree></ul>
+              <ul id="rootContainer">
+                <tree id="root" ng-model="huffmanTree"></tree>
+              </ul>
             </div>
           </div>
           </div>

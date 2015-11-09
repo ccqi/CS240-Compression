@@ -116,13 +116,13 @@ void Encoding::addToFront(const BITS& b){
     bits_.insert(bits_.begin(),b.begin(),b.end());
     BITS bits; 
     bits.insert(bits.begin(),b.begin(),b.end());
-    data_.push_back(make_pair("data", bits));
+    data_.push_front(make_pair("data", bits));
 }
 void Encoding::addToFront(string field, const BITS& b){
     bits_.insert(bits_.begin(),b.begin(),b.end());
     BITS bits;
     bits.insert(bits.begin(),b.begin(),b.end());
-    data_.push_back(make_pair(field, bits));
+    data_.push_front(make_pair(field, bits));
 }
 State Encoding::readState(){
     int state = readBits(8);

@@ -80,7 +80,7 @@ Encoding * HuffmanEncoder::encode(){
     Trie * iter = huffmanTrie_;
     writeTrie(iter,cipherBits);
     iter = huffmanTrie_;
-    encoding_->add(cipherBits);
+    encoding_->add("huffmanTree", cipherBits);
     //get huffman codes from trie and encode
     BITS prefix;
     HuffmanMap huffmanCodes;
@@ -90,21 +90,26 @@ Encoding * HuffmanEncoder::encode(){
     for(int i=0;i<size;i++){
         BYTE c = plainText[i];
         BITS curCode = huffmanCodes[c];
-        encoding_->add(curCode);
+        stringstream key;
+        key << "huffman";
+        if (i > 0) {
+          key << "_" << (i + 1);
+        }
+        encoding_->add(key.str(), curCode);
     }
     //pad a non-multiple of 8 with zeros
     int bitsize =cipherBits.size();
     int padding = 0;
+    BITS paddingBits;
     if(bitsize % 8 > 0){
         padding = 8 - bitsize % 8;
         for(int i=0;i<padding;i++){
-            encoding_->writeBits(0,1);
+            paddingBits.push_back(0);
         }
     }
-    encoding_->addToFront(Encoding::convertToBits(padding,8));
+    encoding_->add("padding", paddingBits);
+    encoding_->addToFront("paddingNum", Encoding::convertToBits(padding,8));
     encoding_->addToFront("header",Encoding::convertToBits(id_,8));
-    encoding_->setFields("header");
-    encoding_->setFields("data");
     compressionRatio_ = *encoding_ / *originalEncoding_;
     return encoding_;
 }

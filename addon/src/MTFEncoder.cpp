@@ -35,16 +35,19 @@ Encoding * MTFEncoder::encode(){
 //    alpha_ = alpha;
 
     //string encoding;
-    encoding_->setFields("header");
     encoding_->writeBits("header",id_,8);
-    encoding_->setFields("data");
     for(int i=0;i<plainText.length();i++){
         char c = plainText[i];
         auto it = find_if(alpha.begin(),alpha.end(),[c](char ch)->bool{
                                 return ch == c;
                             });
         int index = (std::distance(alpha.begin(),it));
-        encoding_->writeBits(index,8);
+        stringstream key;
+        key << "mtf";
+        if (i > 0) {
+          key << "_" << (i + 1);
+        }
+        encoding_->writeBits(key.str(),index,8);
         char first = alpha.front();
         string newAlpha = alpha;
         newAlpha.erase(remove_copy_if(alpha.begin(),alpha.end(),newAlpha.begin(),[c](char ch)->bool{

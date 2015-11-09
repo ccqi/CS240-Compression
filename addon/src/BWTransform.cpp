@@ -26,11 +26,14 @@ Encoding * BWTransform::encode(){
     }
 
     sort(shifts.begin(),shifts.end());
-    encoding_->setFields("header");
     encoding_->writeBits("header",id_,8);
-    encoding_->setFields("data");
     for(int i=0;i<size;i++){
-        encoding_->writeBits((int)(shifts[i][size-1]),8);
+        stringstream ss;
+        ss << "bwt";
+        if (i > 0) {
+          ss<<"_"<<(i+1);
+        }
+        encoding_->writeBits(ss.str(),(int)(shifts[i][size-1]),8);
     }
     //Encoding test = getDecode(encoding_);
     //assert(equal(plainCode.begin(),plainCode.end(),getDecode(encoding_).begin()));

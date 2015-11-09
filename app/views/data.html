@@ -1,0 +1,8 @@
+<span 
+  ng-repeat="entry in data"
+  class="{{entry.field}}"
+  ng-Mouseover="highlight.mouseOver($parent.type, entry)"
+  ng-Mouseleave="highlight.mouseLeave($parent.type, entry)"
+>
+{{entry[type]}}
+</span>

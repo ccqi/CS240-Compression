@@ -1,6 +1,20 @@
 .header {
   color: green
 }
+.sign {
+  color: red;
+}
+.paddingNum {
+  color: blue;
+}
+.padding {
+  color: blue;
+}
+
+.huffmanTree {
+  color: purple;
+}
+
 .float-right {
   float: right
 }
@@ -36,7 +50,6 @@ div .lzw {
   background-color: inherit;
 }
 
-/*Now the CSS*/
 * {margin: 0; padding: 0;}
 .tree {
     min-height:20px;
@@ -72,20 +85,35 @@ div .lzw {
 
 /*We will use ::before and ::after to draw the connectors*/
 
-.tree li::before {
+.tree .normal li::before {
   content: attr(label1);
   position: absolute; top: 0; right: 50%;
-  border-top: 1px solid #000;
+  border-top: 1px solid #222;
+  width: 50%; height: 20px;
+}
+.tree .bold li::before {
+  content: attr(label1);
+  position: absolute; top: 0; right: 50%;
+  border-top: 5px solid #777;
   width: 50%; height: 20px;
 }
 
-.tree li::after{
+.tree .normal li::after{
   content: attr(label0);
   position: absolute; top: 0; right: 50%;
-  border-top: 1px solid #000;
+  border-top: 1px solid #222;
   width: 50%; height: 20px;
   right: auto; left: 50%;
-  border-left: 1px solid #000;
+  border-left: 1px solid #222;
+}
+
+.tree .bold li::after{
+  content: attr(label0);
+  position: absolute; top: 0; right: 50%;
+  border-top: 5px solid #777;
+  width: 50%; height: 20px;
+  right: auto; left: 50%;
+  border-left: 1px solid #222;
 }
 
 /*We need to remove left-right connectors from elements without 
@@ -104,7 +132,7 @@ right connector from last child*/
 }
 /*Adding back the vertical connector to the last nodes*/
 .tree li:last-child::before{
-  border-right: 1px solid #000;
+  border-right: 1px solid #222;
   border-radius: 0 5px 0 0;
   -webkit-border-radius: 0 5px 0 0;
   -moz-border-radius: 0 5px 0 0;
@@ -119,17 +147,17 @@ right connector from last child*/
 .tree ul ul::before{
   content: '';
   position: absolute; top: 0; left: 50%;
-  border-left: 1px solid #000;
+  border-left: 1px solid #222;
   width: 0; height: 20px;
 }
 
 
 
 .tree li span{
-  border: 1px solid #000;
+  border: 1px solid #222;
   padding: 5px 10px;
   text-decoration: none;
-  color: #000;
+  color: #222;
   font-family: arial, verdana, tahoma;
   font-size: 16px;
   display: inline-block;
@@ -146,14 +174,14 @@ right connector from last child*/
 /*Time for some hover effects*/
 /*We will apply the hover effect the the lineage of the element also*/
 .tree li span:hover, .tree li span:hover+ul li span {
-  background: #c8e4f8; color: #000; border: 1px solid #94a0b4;
+  background: #c8e4f8; color: #222; border: 1px solid #94a0b4;
 }
 /*Connector styles on hover*/
 .tree li span:hover+ul li::after, 
 .tree li span:hover+ul li::before, 
 .tree li span:hover+ul::before, 
 .tree li span:hover+ul ul::before{
-  border-color:  #94a0b4;
+  border-color:  #222;
 }
 
 .tree li.parent_li>span {
