@@ -1,6 +1,6 @@
 <span 
   ng-repeat="entry in data"
-  class="{{entry.field}}"
+  class="{{entry.field}} {{entry.binary}}"
   ng-Mouseover="highlight.mouseOver($parent.type, entry)"
   ng-Mouseleave="highlight.mouseLeave($parent.type, entry)"
 >

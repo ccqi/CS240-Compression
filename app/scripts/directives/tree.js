@@ -1,4 +1,4 @@
-angular.module('Compression').directive('tree', function($compile) {
+angular.module('Compression').directive('tree', function($compile, Highlight) {
   return {
     templateUrl: 'views/tree.html',
     replace: true,
@@ -42,16 +42,37 @@ angular.module('Compression').directive('tree', function($compile) {
           elm.remove();
         });
       });
-
-      self.traverseTree = function(index, code) {
-
-
-      }
-      scope.mouseOver = function(code) {
-        console.log('mouseOver'); 
+      self.addStyle = function(elm, color) {
+        if (color) { 
+          elm.children('.leaf').css('background-color', color);
+        } else {
+          elm.children('.leaf').removeAttr('style');
+        }
       };
-      scope.mouseLeave = function(code) {
-
+      self.traverseTop = function(elm, color) {
+        if (elm.is('#root')) {
+          self.addStyle(elm, color);
+          return '';
+        }
+        if (elm.hasClass('zero')) {
+          self.addStyle(elm, color);
+          return traverseTop(elm.parent().parent(), color) + '0';
+        }
+        else if (elm.hasClass('one')) {
+          self.addStyle(elm, color);
+          return traverseTop(elm.parent().parent(), color) + '1';
+        }
+        else {
+          throw 'something went wrong';
+        }
+      }
+      scope.mouseOver = function() {
+        var code = {'field': traverseTop(elm, 'yellow')};
+        Highlight.mouseOver('data', code);
+      };
+      scope.mouseLeave = function() {
+        var code = {'field': traverseTop(elm)};
+        Highlight.mouseLeave('data', code);
       };
     }
   };

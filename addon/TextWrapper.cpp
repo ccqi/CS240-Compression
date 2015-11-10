@@ -179,9 +179,9 @@ v8Object TextWrapper::formatLZWTable(map<int,string> sTable, deque<tuple<string,
   i = 0;
   for (auto it = sTable.begin(); it!=sTable.end(); ++it) {
     v8Object entry = Nan::New<v8::Object>();
-    string s = it->second;
+    string s = Encoding::convertToText(it->second);
     entry->Set(Nan::New("Decimal").ToLocalChecked(), Nan::New(it->first));
-    entry->Set(Nan::New("Symbol").ToLocalChecked(), Nan::New(it->second).ToLocalChecked());
+    entry->Set(Nan::New("Symbol").ToLocalChecked(), Nan::New(s).ToLocalChecked());
     sList->Set(i, entry);
     i++;
   }
@@ -213,16 +213,6 @@ v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table) {
     i++;
   }
   rleTable->Set(Nan::New("entries").ToLocalChecked(), entries);
-  /*int i = 0;
-  for (auto it = order.begin(); it!=order.end(); ++it) {
-    v8Object entry = Nan::New<v8::Object>();
-    string run = Encoding::convertToBinaryString(*it);
-    string runLength = Encoding::convertToBinaryString(table[*it]);
-    entry->Set(Nan::New("run").ToLocalChecked(), Nan::New(run).ToLocalChecked());
-    entry->Set(Nan::New("runLength").ToLocalChecked(), Nan::New(runLength).ToLocalChecked());
-    list->Set(i, entry);
-    i++;
-  }*/
   return rleTable;
 }
 
@@ -232,7 +222,8 @@ v8Object TextWrapper::formatHuffmanTrie(Trie * trie) {
     v8Object node = Nan::New<v8::Object>();
     stringstream ss;
     ss<< trie->c;
-    node->Set(Nan::New("char").ToLocalChecked(), Nan::New(ss.str()).ToLocalChecked());
+    string c = Encoding::convertToText(ss.str());
+    node->Set(Nan::New("char").ToLocalChecked(), Nan::New(c).ToLocalChecked());
     node->Set(Nan::New("freq").ToLocalChecked(), Nan::New(trie->freq));
     return node;
   }

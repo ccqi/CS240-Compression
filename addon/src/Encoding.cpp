@@ -199,6 +199,25 @@ string Encoding::convertToText(BITS bits){
     return text;
 }
 
+string Encoding::convertToText(string s){
+    string text;
+    for(int i = 0; i < s.size(); i++) {
+      char c = s[i];
+      if (c == 32) {
+        text += "_";
+      }
+      else if (c > 31 && c < 127 ) {
+        text += c;
+      }
+      else {
+        stringstream ss;
+        ss << "(" << (int)c << ")";
+        text+=ss.str();
+      }
+    }
+    return text;
+}
+
 string Encoding::convertToBinaryString(BITS bits){
   string binaryString;
   for(int i=0;i<bits.size();i++){

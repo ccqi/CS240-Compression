@@ -61,7 +61,7 @@ div .lzw {
     border-radius:4px;
     -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
     -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
-    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .tree ul {
@@ -70,6 +70,7 @@ div .lzw {
   transition: all 0.5s;
   -webkit-transition: all 0.5s;
   -moz-transition: all 0.5s;
+  box-sizing: border-box;
 }
 
 .tree li {

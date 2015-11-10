@@ -8,7 +8,6 @@ angular.module('Compression').factory('Highlight', ['$http', function($http) {
 
   self.mouseOver = function(type, entry) {
     var elms = document.getElementsByClassName(entry.field);
-    console.log(type);
     self.changeColor(elms, "yellow");
     
     if (type === 'Huffman' && entry.field !== 'huffmanTree' && entry.field.indexOf('huffman') > -1 ) {
@@ -28,12 +27,10 @@ angular.module('Compression').factory('Highlight', ['$http', function($http) {
   
   self.traverseTree = function(element, index, code, flag) {
     if (index <= code.length) {
-      if (index > 0) {
-        if (flag) {
-          element.children('.leaf').css('background-color','#c8e4f8');
-        } else {
-          element.children('.leaf').removeAttr('style');
-        }
+      if (flag) {
+        element.children('.leaf').css('background-color','yellow');
+      } else {
+        element.children('.leaf').removeAttr('style');
       }
 
       var ul = element.children('ul');

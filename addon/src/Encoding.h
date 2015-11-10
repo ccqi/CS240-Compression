@@ -50,6 +50,7 @@ class Encoding
         static std::string convertToHexString(BITS);
         static std::string convertToString(BITS);
         static std::string convertToText(BITS);
+        static std::string convertToText(std::string);
         static std::string convertToBinaryString(BITS);
         static BYTES convertToBytes(BITS);
         static int getBinarySize(int);
