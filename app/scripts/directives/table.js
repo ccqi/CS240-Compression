@@ -1,6 +1,6 @@
 angular.module('Compression').directive('encodingTable', function($compile, $window, Highlight) {
-  var self = this; 
-  
+  var self = this;
+
   return {
     templateUrl: 'views/table.html',
     replace: true,
@@ -11,6 +11,7 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
       table:'=ngModel'
     },
     link: function(scope, elm, attrs) {
+      scope.name = 'table';
       scope.highlight = Highlight;
       scope.getScrollBarWidth = function() {
         // Create the measurement node
@@ -21,10 +22,10 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
         // Get the scrollbar width
         scope.scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
 
-        // Delete the DIV 
+        // Delete the DIV
         document.body.removeChild(scrollDiv);
-      }
-      scope.resizeTable = function() { 
+      };
+      scope.resizeTable = function() {
         $('.table-head').removeAttr('style');
         width = $('.table-head').width() - scope.scrollbarWidth;
         $('.table-head').css('width', width);
@@ -36,5 +37,5 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
         scope.$apply();
       });
     }
-  };  
+  };
 });

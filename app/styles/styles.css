@@ -4,10 +4,9 @@
 .sign {
   color: red;
 }
+
+.padding,
 .paddingNum {
-  color: blue;
-}
-.padding {
   color: blue;
 }
 
@@ -68,6 +67,7 @@
 
 .tree-char {
   display: inline;
+  color: red;
 }
 
 div .lzw {

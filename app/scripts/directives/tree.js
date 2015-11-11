@@ -9,23 +9,24 @@ angular.module('Compression').directive('tree', function($compile, Highlight) {
     },
     link: function(scope, elm, attrs) {
       var self = this;
+      scope.name = 'tree';
       scope.$watch('tree', function() {
         if (scope.tree.value.zero || scope.tree.value.one) {
           var ul = $compile('<ul></ul>')(scope);
           elm.append(ul);
-          
+
           if (scope.tree.value.zero) {
             scope.zeroTree = {
               'key': {
                 'zero': '0',
                 'one': ''
-              
+
               },
               'value': scope.tree.value.zero
             };
             var zero = $compile('<tree ng-model="zeroTree"></tree>')(scope);
             elm.find('ul').append(zero);
-          }   
+          }
           if (scope.tree.value.one) {
             scope.oneTree = {
               'key': {
@@ -43,7 +44,7 @@ angular.module('Compression').directive('tree', function($compile, Highlight) {
         });
       });
       self.addStyle = function(elm, color) {
-        if (color) { 
+        if (color) {
           elm.children('.leaf').css('background-color', color);
         } else {
           elm.children('.leaf').removeAttr('style');
@@ -65,16 +66,16 @@ angular.module('Compression').directive('tree', function($compile, Highlight) {
         else {
           throw 'something went wrong';
         }
-      }
+      };
       scope.mouseOver = function() {
         var code = {'field': traverseTop(elm, 'yellow')};
-        Highlight.mouseOver('data', code);
+        Highlight.mouseOver(name, 'data', code);
       };
       scope.mouseLeave = function() {
         var code = {'field': traverseTop(elm)};
-        Highlight.mouseLeave('data', code);
+        Highlight.mouseLeave(name, 'data', code);
       };
     }
   };
-  
+
 });

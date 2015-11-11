@@ -16,8 +16,8 @@
     <td 
       ng-repeat="col in table.columns"
       class="{{entry.field}}"
-      ng-Mouseover="highlight.mouseOver($parent.type, entry)"
-      ng-Mouseleave="highlight.mouseLeave($parent.type, entry)">
+      ng-Mouseover="highlight.mouseOver($parent.name, $parent.type, entry)"
+      ng-Mouseleave="highlight.mouseLeave($parent.name, $parent.type, entry)">
       {{entry[col]}}
     </td>
   </tr>
