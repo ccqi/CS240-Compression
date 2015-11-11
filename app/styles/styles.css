@@ -21,10 +21,23 @@
 .inline {
   display: inline
 }
+.scrollbar-measure {
+  width: 100px;
+  height: 100px;
+  overflow: scroll;
+  position: absolute;
+  top: -9999px;
+}
 
-.tree-char {
-  color: red;
-  display: inline;
+.table {
+  table-layout: fixed;
+  margin-bottom: 0px;
+}
+
+.table-content {
+  cursor: pointer;
+  height: 350px;
+  overflow-y: scroll;
 }
 
 .text-display {
@@ -33,12 +46,28 @@
   font-size: 16px;
 }
 
-.table-display {
+.table-head {
   cursor: pointer;
+  /*table-layout: fixed;*/
+  width: %;
+}
+
+.orange-border { 
+  border-bottom: 2px solid orange;
+  border-top: 2px solid orange;
+}
+
+.table-bordered > thead > tr > td {
+  border-bottom: 2px solid orange;
+
 }
 
 .heading-big {
   font-size: 24px;
+}
+
+.tree-char {
+  display: inline;
 }
 
 div .lzw {
