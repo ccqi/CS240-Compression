@@ -3,6 +3,9 @@ angular.module('Compression').factory('Highlight', ['$http', function($http) {
   self.changeColor = function(elms, color) {
     for (var i = 0; i <  elms.length; i++ ) {
       elms[i].style.backgroundColor = color;
+      if (!elms[i].tagName === 'TD') {
+        $('.table-content').scrollTo(elms[i]);
+      }
     }
   }
 
