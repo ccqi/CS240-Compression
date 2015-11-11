@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('Compression').controller('MainCtrl', 
-  ['$scope', 
+angular.module('Compression').controller('MainCtrl',
+  ['$scope',
   'C9nAPI',
   '$compile',
   'Highlight',
@@ -33,7 +33,7 @@ angular.module('Compression').controller('MainCtrl',
         angular.element(document.querySelector('#rootContainer')).append(root);
       }
     });
-    
+
     $scope.submit = function() {
       var request = {
         'method': $scope.method,
@@ -42,7 +42,7 @@ angular.module('Compression').controller('MainCtrl',
       C9nAPI.encode(request).then(
         function(response) {
           console.log('success');
-            
+
           $scope.response = response.data;
           if ($scope.response.encoding.data){
             $scope.info = $scope.response.encoding.data;

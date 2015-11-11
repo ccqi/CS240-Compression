@@ -1,4 +1,4 @@
-angular.module('Compression').directive('data', function($compile, Highlight) {
+angular.module('Compression').directive('data', function($compile, Highlight, config) {
   return {
     templateUrl: 'views/data.html',
     replace: true,
@@ -12,14 +12,13 @@ angular.module('Compression').directive('data', function($compile, Highlight) {
       var self = this;
       scope.name = 'data';
       scope.highlight = Highlight;
-      scope.popup = 'bye';
       scope.mouseOver = function(entry) {
         Highlight.mouseOver(scope.name, scope.type, entry);
-        var elmClass = elm.children('.' + entry.field).children('uib-tooltip');
-        elmClass.text('bye');
+        scope.tooltipText = config.tooltip[entry.field];
       };
       scope.mouseLeave = function(entry) {
         Highlight.mouseLeave(scope.name, scope.type, entry);
+        //scope.tooltipText = config.tooltip[entry.field];
       };
     }
   };

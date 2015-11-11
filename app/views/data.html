@@ -1,7 +1,9 @@
 <span 
   ng-repeat="entry in data"
   class="{{entry.field}} {{entry.binary}}"
-  uib-tooltip = "{{popup}}"
+  data-toggle="tooltip"
+  title="{{$parent.tooltipText}}"
+  data-animation="true"
   ng-Mouseover="$parent.mouseOver(entry)"
   ng-Mouseleave="$parent.mouseLeave(entry)"
 >
