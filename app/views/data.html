@@ -1,11 +1,11 @@
 <span 
   ng-repeat="entry in data"
-  class="{{entry.field}} {{entry.binary}}"
-  data-toggle="tooltip"
-  title="{{$parent.tooltipText}}"
-  data-animation="true"
+  class="{{entry.field}} {{entry.binary.replace(' ','')}}"
+  uib-popover="{{$parent.getPopoverText(entry.field)}}"
+  popover-placement="bottom"
+  popover-popup-delay="200"
+  popover-popup-close-delay="200"
+  popover-trigger="mouseenter"
   ng-Mouseover="$parent.mouseOver(entry)"
   ng-Mouseleave="$parent.mouseLeave(entry)"
->
-{{entry[type]}}
-</span>
+>{{entry[type]}}</span>

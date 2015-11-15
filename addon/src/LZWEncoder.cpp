@@ -4,6 +4,7 @@ using namespace std;
 
 LZWEncoder::LZWEncoder(TextComponent * component_):Decorator(component_){
     id_ = LZW;
+    format_.push_back("binary");
 }
 
 LZWEncoder::~LZWEncoder(){

@@ -28,12 +28,14 @@ class TextComponent
         void setEncoding(Encoding*);
         Encoding * getEncoding() const;
         double getCompressionRatio() const;
+        std::vector<std::string> getFormat() const;
     protected:
         virtual Encoding * getDecode(Encoding *) = 0;
         Encoding * encoding_;
         Encoding * originalEncoding_;
         double compressionRatio_;
         State id_;
+        std::vector<std::string> format_;
     private:
 
 

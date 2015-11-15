@@ -12,13 +12,17 @@ angular.module('Compression').directive('data', function($compile, Highlight, co
       var self = this;
       scope.name = 'data';
       scope.highlight = Highlight;
+      self.textLen = 0;
+      scope.getPopoverText = function(field) {
+        return config.popover[field];
+      };
+      
       scope.mouseOver = function(entry) {
         Highlight.mouseOver(scope.name, scope.type, entry);
-        scope.tooltipText = config.tooltip[entry.field];
       };
+
       scope.mouseLeave = function(entry) {
         Highlight.mouseLeave(scope.name, scope.type, entry);
-        //scope.tooltipText = config.tooltip[entry.field];
       };
     }
   };

@@ -55,7 +55,7 @@
         <div class="row">
           <div class="col-md-6">
           <uib-tabset class="text-display">
-            <uib-tab  ng-repeat="type in types" heading={{type}}>
+            <uib-tab  ng-repeat="type in response.encoding.formats" heading={{type}}>
               <data type="response.method" ng-model="info"></data>
             </uib-tab>
             
@@ -66,11 +66,11 @@
             <div class="panel-heading heading-big">LZW Table</div>
             <div class="row">
               <div class="col-md-6">
-                <encoding-table type="LZW" ng-model="response.encoding.table.output">
+                <encoding-table type="'output'" ng-model="response.encoding.table.output">
                 </encoding-table>
               </div>
               <div class="col-md-6">
-                <encoding-table type="LZW" ng-model="response.encoding.table.symbol">
+                <encoding-table type="'symbol'" ng-model="response.encoding.table.symbol">
                 </encoding-table>
               </div>
             </div>
@@ -81,7 +81,7 @@
           
           <div class="panel panel-default panel-transparent" ng-if="response.encoding.table && response.method=='RLE'">
             <div class="panel-heading heading-big">RLE Table</div>
-            <encoding-table type="response.method" ng-model="response.encoding.table"></encoding-table> 
+            <encoding-table type="rle_encoding" ng-model="response.encoding.table"></encoding-table> 
           </div>
           <div class="panel panel-default"  ng-if="huffmanTree">
             <div class="panel-heading heading-big">Huffman Tree</div>

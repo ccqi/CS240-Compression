@@ -11,7 +11,7 @@ angular.module('Compression').directive('tree', function($compile, Highlight) {
       var self = this;
       scope.name = 'tree';
       scope.$watch('tree', function() {
-        if (scope.tree.value.zero || scope.tree.value.one) {
+        if (scope.tree && (scope.tree.value.zero || scope.tree.value.one)) {
           var ul = $compile('<ul></ul>')(scope);
           elm.append(ul);
 

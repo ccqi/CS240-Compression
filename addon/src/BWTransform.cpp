@@ -4,6 +4,9 @@ using namespace std;
 
 BWTransform::BWTransform(TextComponent * component):Decorator(component){
     id_ = BWT;
+    format_.push_back("binary");
+    format_.push_back("hex");
+    format_.push_back("text");
 }
 
 BWTransform::~BWTransform(){}

@@ -4,6 +4,7 @@ using namespace std;
 
 RLEEncoder::RLEEncoder(TextComponent * component):Decorator(component){
     id_ = RLE;
+    format_.push_back("binary");
 }
 
 RLEEncoder::~RLEEncoder(){}

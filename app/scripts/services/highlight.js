@@ -1,18 +1,29 @@
-angular.module('Compression').factory('Highlight', ['$http', function($http) {
+angular.module('Compression').factory('Highlight', ['$http','$rootScope', function($http, $rootScope) {
   var self = this;
 
-  self.changeColor = function(input, elms, color) {
+  self.changeColor = function(input, type, elms, color) {
     for (var i = 0; i <  elms.length; i++ ) {
       elms[i].style.backgroundColor = color;
       if (input === 'data') {
-        $('.table-content').scrollTo(elms[i]);
+        $('.output.table-content').scrollTo(elms[i]);
+      }
+      else if (type === 'output') {
+        $('.symbol.table-content').scrollTo(elms[i]);
       }
     }
   };
 
   self.mouseOver = function(input, type, entry) {
     var elms = $('.' + entry.field);
-    self.changeColor(input, elms, 'yellow');
+    self.changeColor(input, type, elms, 'yellow');
+    if (entry.Decimal) {
+      var elms = $('.' + entry.Decimal);
+      self.changeColor(input, type, elms, 'yellow');
+    }
+    if (entry.Code) {
+      self.changeColor(input, type, $('td.symbol.' + entry.Code), 'yellow');
+    }
+
     if (type === 'Huffman' && entry.field !== 'huffmanTree' && entry.field.indexOf('huffman') > -1 ) {
       root = $('#root');
       self.traverseTree(root, 0, entry.binary, true);
@@ -21,7 +32,15 @@ angular.module('Compression').factory('Highlight', ['$http', function($http) {
 
   self.mouseLeave = function(input, type, entry) {
     var elms = document.getElementsByClassName(entry.field);
-    self.changeColor(input, elms, 'inherit');
+    self.changeColor(input, type, elms, 'inherit');
+    if (entry.Decimal) {
+      var elms = $('.' + entry.Decimal);
+      self.changeColor(input, type, elms, 'inherit');
+    }
+    if (entry.Code) {
+      self.changeColor(input, type, $('td.symbol.' + entry.Code), 'inherit');
+    }
+
     if (type === 'Huffman' && entry.field !== 'huffmanTree' && entry.field.indexOf('huffman') > -1 ) {
       root = $('#root');
       self.traverseTree(root, 0, entry.binary, false);

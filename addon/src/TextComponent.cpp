@@ -20,6 +20,11 @@ Encoding * TextComponent::getEncoding() const{
 double TextComponent::getCompressionRatio() const {
   return compressionRatio_;
 }
+
+vector<string> TextComponent::getFormat() const {
+  return format_;
+}
+
 ////convert from index to binary bits
 //void TextComponent::writeBits(BITS& bits, int code,int bit_size){
 //    for(int i=0;i<bit_size;i++){

@@ -19,10 +19,6 @@ angular.module('Compression').controller('MainCtrl',
     $scope.dataChanged = function() {
       $scope.size = $scope.data.length * 4;
     }
-    $scope.types = [
-      'binary',
-      'hex'
-    ];
 
     $scope.$watch('huffmanTree', function() {
       // destroy and recompile tree view whenever huffmanTree changes
@@ -33,6 +29,24 @@ angular.module('Compression').controller('MainCtrl',
         angular.element(document.querySelector('#rootContainer')).append(root);
       }
     });
+    
+    self.processOutput = function(output) {
+      var textLen = 0;
+      var info = {};
+      for (var i = 0; i < output.length; i++) {
+        var binary = '';
+        var curBinary = output[i].binary;
+        for(var j = 0; j < curBinary.length; j++) {
+          textLen++;
+          binary+= curBinary[j];
+          if (textLen % 8 == 0) {
+            binary += ' ';
+          }
+        }
+        output[i].binary = binary;
+      }
+      return output;
+    }
 
     $scope.submit = function() {
       var request = {
@@ -45,17 +59,9 @@ angular.module('Compression').controller('MainCtrl',
 
           $scope.response = response.data;
           if ($scope.response.encoding.data){
-            $scope.info = $scope.response.encoding.data;
+            $scope.info = processOutput($scope.response.encoding.data);
           }
-          if ($scope.response.method == 'BWT') {
-            $scope.types.push('text');
-          }
-          else{
-            $scope.types = [
-              'binary',
-              'hex'
-            ];
-          }
+
           $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
           if ($scope.response.encoding.huffmanTrie) {
             $scope.huffmanTree = {

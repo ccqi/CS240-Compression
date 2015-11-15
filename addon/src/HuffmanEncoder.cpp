@@ -4,6 +4,7 @@ using namespace std;
 
 HuffmanEncoder::HuffmanEncoder(TextComponent * component):Decorator(component){
     id_ = HUFFMAN;
+    format_.push_back("binary");
 }
 
 HuffmanEncoder::~HuffmanEncoder(){}

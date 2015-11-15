@@ -5,6 +5,8 @@ using namespace std;
 
 MTFEncoder::MTFEncoder(TextComponent * component):Decorator(component){
     id_ = MTF;
+    format_.push_back("binary");
+    format_.push_back("hex");
 }
 
 MTFEncoder::~MTFEncoder(){}
