@@ -65,7 +65,6 @@ Encoding * LZWEncoder::encode(){
 
     //pad a non-multiple of 8 with zeros
     int bitsize =encoding_->getSize();
-    cout<<"size"<<bitsize<<endl;
     if(bitsize % 8 > 0){
         int padding = 8 - bitsize % 8;
         for(int i=0;i<padding;i++){

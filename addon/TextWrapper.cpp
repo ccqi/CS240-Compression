@@ -4,12 +4,20 @@ using namespace std;
 
 Nan::Persistent<v8::Function> TextWrapper::constructor;
 
-TextWrapper::TextWrapper(Encoding * encoding){
-  component_ = new PlainText(encoding);
+TextWrapper::TextWrapper(){
+  rleIndex_ = 0;
+  lzwIndex_ = 0;
+  huffmanIndex_ = 0;
+  dataIndex_ = 0;
+  max_ = 50;
 }
 
 TextWrapper::~TextWrapper() {
 
+}
+
+void TextWrapper::setEncoding(Encoding * encoding) {
+  component_ = new PlainText(encoding);
 }
 
 TextComponent * TextWrapper::setDecorator(string type, TextComponent * text){
@@ -44,6 +52,10 @@ void TextWrapper::Init(v8Object exports) {
   // Prototype
   Nan::SetPrototypeMethod(tpl, "encode", Encode);
   Nan::SetPrototypeMethod(tpl, "decode", Decode);
+  Nan::SetPrototypeMethod(tpl, "get", Get);
+  Nan::SetPrototypeMethod(tpl, "getData", GetData);
+  Nan::SetPrototypeMethod(tpl, "getTable", GetTable);
+  Nan::SetPrototypeMethod(tpl, "set", Set);
 
   constructor.Reset(tpl->GetFunction());
   exports->Set(Nan::New("TextWrapper").ToLocalChecked(), tpl->GetFunction());
@@ -52,10 +64,8 @@ void TextWrapper::Init(v8Object exports) {
 void TextWrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   if (info.IsConstructCall()) {
     // Invoked as constructor: `new TextWrapper(...)`
-    v8::String::Utf8Value param1(info[0]->ToString());
-    std::string plainText = std::string(*param1);
-    Encoding * encoding = new Encoding(plainText, TEXT);
-    TextWrapper * wrapper = new TextWrapper(encoding);
+    TextWrapper * wrapper = new TextWrapper();
+    
     wrapper->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   } else {
@@ -67,36 +77,72 @@ void TextWrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
+void TextWrapper::Set(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  // unwrap the object
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(info.Holder());
+  
+  // get the plain text
+  v8::String::Utf8Value param1(info[0]->ToString());
+  std::string plainText = std::string(*param1);
+  Encoding * encoding = new Encoding(plainText, TEXT);
+  wrapper->setEncoding(encoding);
+  
+  info.GetReturnValue().Set(info.This());
+}
+
 void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   
   // convert argument to string
-  v8::String::Utf8Value param2(args[1]->ToString());
-  string type = string(*param2);
+  v8::String::Utf8Value param1(args[0]->ToString());
+  string type = string(*param1);
 
   // unwrap the object
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
   wrapper->component_ = setDecorator(type, wrapper->component_);
   
-  TextComponent * component = wrapper->component_;
-  
   // encode
-  Encoding * encoding = component->encode();
+  Encoding * encoding = wrapper->component_->encode(); 
+  wrapper->rleIndex_ = 0;
+  wrapper->lzwIndex_ = 0;
+  wrapper->huffmanIndex_ = 0;
+  wrapper->dataIndex_ = 0;
+  args.GetReturnValue().Set(args.This());
+}
+
+void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+   
+  // unwrap the object
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  TextComponent * component = wrapper->component_;
+  Encoding * encoding = component->getEncoding();
+  
+  // convert argument to string
+  v8::String::Utf8Value param1(args[0]->ToString());
+  string type = string(*param1);
+  wrapper->max_ = args[1]->Int32Value();
   
   // convert result to json
   v8Object result = Nan::New<v8::Object>();
   vector<string> format = component->getFormat();
   result->Set(Nan::New("formats").ToLocalChecked(), getFormats(format));
-  result->Set(Nan::New("data").ToLocalChecked(), getData(type, encoding, component));
+  result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, wrapper));
+  double percent = (double)wrapper->dataIndex_ / encoding->size();
+  percent = (percent > 1) ? 1 : percent;
+  result->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   result->Set(Nan::New("compression_ratio").ToLocalChecked(), Nan::New(component->getCompressionRatio()));
+  
   // get additional properties
   if (type == "LZW") {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
     deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
-    result->Set(Nan::New("table").ToLocalChecked(), formatLZWTable(symbolTable, outputTable));
+    v8Object table = Nan::New<v8::Object>();
+    table->Set(Nan::New("symbol").ToLocalChecked(), formatSymbolTable(symbolTable));
+    table->Set(Nan::New("output").ToLocalChecked(), formatOutputTable(outputTable, wrapper));
+    result->Set(Nan::New("table").ToLocalChecked(), table);
   }
   else if (type == "RLE") {
     deque<tuple<string,BITS,BITS> > table = reinterpret_cast<RLEEncoder*>(component)->getTable();
-    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table));
+    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table, wrapper));
   }
   else if (type == "Huffman") {
     Trie * huffmanTrie = reinterpret_cast<HuffmanEncoder*>(component)->getHuffmanTrie();
@@ -108,6 +154,51 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(result);
 }
 
+void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  // unwrap the object
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  TextComponent * component = wrapper->component_;
+  Encoding * encoding = component->getEncoding();
+  // convert argument to string
+  v8::String::Utf8Value param1(args[0]->ToString());
+  string type = string(*param1);
+  
+  v8Object result = Nan::New<v8::Object>();  
+  result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, wrapper));
+  double percent = (double)wrapper->dataIndex_ / encoding->size();
+  percent = (percent > 1) ? 1 : percent;
+  result->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
+  // set return value to object
+  args.GetReturnValue().Set(result);
+}
+
+void TextWrapper::GetTable(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  // unwrap the object
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  TextComponent * component = wrapper->component_;
+  Encoding * encoding = component->getEncoding();
+  
+  // convert argument to string
+  v8::String::Utf8Value param1(args[0]->ToString());
+  string type = string(*param1);
+  v8Object result;
+  if (type == "symbol") {
+    map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
+    result = formatSymbolTable(symbolTable);
+  }
+  if (type == "output") {
+    deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
+    result = formatOutputTable(outputTable, wrapper);
+  }
+  else if (type == "RLE") {
+    deque<tuple<string,BITS,BITS> > table = reinterpret_cast<RLEEncoder*>(component)->getTable();
+    result = formatRLETable(table, wrapper);
+  }
+  
+  // set return value to object
+  args.GetReturnValue().Set(result);
+}
+
 v8Array TextWrapper::getFormats(vector<string> formats) {
   v8Array fieldArray = Nan::New<v8::Array>();
   for(int i=0;i<formats.size();i++){
@@ -115,13 +206,15 @@ v8Array TextWrapper::getFormats(vector<string> formats) {
   }
   return fieldArray;
 }
-v8Array TextWrapper::getData(string type, Encoding* encoding, TextComponent * component) {
+v8Array TextWrapper::formatData(string type, Encoding* encoding, TextComponent * component, TextWrapper * wrapper) {
   v8Array data = Nan::New<v8::Array>();
   deque<tuple<string,int, BITS> > outputTable;
   if (type == "LZW") {
       outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
   }
-  for (int i = 0; i < encoding->size(); i++) {
+  int iter = 0;
+  int dataMax = (wrapper->dataIndex_ + wrapper->max_ < encoding->size()) ? wrapper->dataIndex_ + wrapper->max_ : encoding->size();
+  for (int i = wrapper->dataIndex_; i < dataMax; i++) {
     v8Object entry = Nan::New<v8::Object>();
     pair<string, BITS> entryData = encoding->get(i);
     stringstream ss;
@@ -149,46 +242,23 @@ v8Array TextWrapper::getData(string type, Encoding* encoding, TextComponent * co
       }
     } 
     entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(field).ToLocalChecked());
-    data->Set(i, entry);
+    data->Set(iter, entry);
+    iter++;
   }
+  wrapper->dataIndex_ = dataMax;
+  
   return data;
 }
 
-v8Object TextWrapper::formatLZWTable(map<int,string> sTable, deque<tuple<string,int, BITS> > oTable) {
+v8Object TextWrapper::formatSymbolTable(map<int,string> sTable) {
   
-  v8Object mainTable = Nan::New<v8::Object>(); 
-  
-  // output table
-  v8Object outputTable = Nan::New<v8::Object>(); 
-  v8Array oCols = Nan::New<v8::Array>();
-  oCols->Set(0, Nan::New("Binary").ToLocalChecked());
-  oCols->Set(1, Nan::New("Code").ToLocalChecked());
-  outputTable->Set(Nan::New("columns").ToLocalChecked(), oCols);
-  v8Array oList = Nan::New<v8::Array>();
-  int i = 0;
-  for (auto it = oTable.begin(); it!=oTable.end(); ++it) {
-    v8Object entry = Nan::New<v8::Object>();
-    tuple<string, int, BITS> tuple = *it;
-    string key = get<0>(tuple);
-    int dec = get<1>(tuple);
-    string binString = Encoding::convertToBinaryString(get<2>(tuple));
-    entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(key).ToLocalChecked());
-    entry->Set(Nan::New("Binary").ToLocalChecked(), Nan::New(binString).ToLocalChecked());
-    entry->Set(Nan::New("Code").ToLocalChecked(), Nan::New(dec));
-    oList->Set(i, entry);
-    i++;
-  }
-  outputTable->Set(Nan::New("entries").ToLocalChecked(), oList);
-  mainTable->Set(Nan::New("output").ToLocalChecked(), outputTable);
-
-  // symbol table
   v8Object symbolTable = Nan::New<v8::Object>(); 
   v8Array sCols = Nan::New<v8::Array>();
   sCols->Set(0, Nan::New("Decimal").ToLocalChecked());
   sCols->Set(1, Nan::New("Symbol").ToLocalChecked());
   symbolTable->Set(Nan::New("columns").ToLocalChecked(), sCols);
   v8Array sList = Nan::New<v8::Array>();
-  i = 0;
+  int i = 0;
   for (auto it = sTable.begin(); it!=sTable.end(); ++it) {
     v8Object entry = Nan::New<v8::Object>();
     string s = Encoding::convertToText(it->second);
@@ -198,11 +268,41 @@ v8Object TextWrapper::formatLZWTable(map<int,string> sTable, deque<tuple<string,
     i++;
   }
   symbolTable->Set(Nan::New("entries").ToLocalChecked(), sList);
-  mainTable->Set(Nan::New("symbol").ToLocalChecked(), symbolTable);
-  return mainTable;
+  return symbolTable;
 }
 
-v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table) {
+v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, TextWrapper * wrapper) {
+  
+  // output table
+  v8Object outputTable = Nan::New<v8::Object>(); 
+  v8Array oCols = Nan::New<v8::Array>();
+  oCols->Set(0, Nan::New("Binary").ToLocalChecked());
+  oCols->Set(1, Nan::New("Code").ToLocalChecked());
+  outputTable->Set(Nan::New("columns").ToLocalChecked(), oCols);
+  v8Array oList = Nan::New<v8::Array>();
+  int iter = 0;
+  int lzwMax = (wrapper->lzwIndex_ + wrapper->max_ < oTable.size()) ? wrapper->lzwIndex_ + wrapper->max_ : oTable.size();
+  for (int i = wrapper->lzwIndex_; i < lzwMax; i++) {
+    v8Object entry = Nan::New<v8::Object>();
+    tuple<string, int, BITS> tuple = oTable[i];
+    string key = get<0>(tuple);
+    int dec = get<1>(tuple);
+    string binString = Encoding::convertToBinaryString(get<2>(tuple));
+    entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(key).ToLocalChecked());
+    entry->Set(Nan::New("Binary").ToLocalChecked(), Nan::New(binString).ToLocalChecked());
+    entry->Set(Nan::New("Code").ToLocalChecked(), Nan::New(dec));
+    oList->Set(iter, entry);
+    iter++;
+  }
+  wrapper->lzwIndex_ = lzwMax;
+  double percent = (double)wrapper->lzwIndex_ / oTable.size();
+  percent = (percent > 1) ? 1 : percent;
+  outputTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
+  outputTable->Set(Nan::New("entries").ToLocalChecked(), oList);
+  return outputTable;
+}
+
+v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table, TextWrapper * wrapper) {
   // output table
   v8Object rleTable = Nan::New<v8::Object>(); 
   v8Array cols = Nan::New<v8::Array>();
@@ -211,19 +311,24 @@ v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table) {
   cols->Set(1, Nan::New("RunLength").ToLocalChecked());
   rleTable->Set(Nan::New("columns").ToLocalChecked(), cols);
   v8Array entries = Nan::New<v8::Array>();
-  int i = 0;
-  for (auto it = table.begin(); it!=table.end(); ++it) {
+  int iter = 0;
+  int rleMax = (wrapper->rleIndex_ + wrapper->max_ < table.size()) ? wrapper->rleIndex_ + wrapper->max_ : table.size();
+  for (int i = wrapper->rleIndex_; i < rleMax; i++) {
     v8Object entry = Nan::New<v8::Object>();
-    tuple<string, BITS, BITS> tuple = *it;
+    tuple<string, BITS, BITS> tuple = table[i];
     string key = get<0>(tuple);
     string run = Encoding::convertToBinaryString(get<1>(tuple));
     string runLength = Encoding::convertToBinaryString(get<2>(tuple));
     entry->Set(Nan::New("field").ToLocalChecked(), Nan::New(key).ToLocalChecked());
     entry->Set(Nan::New("Run").ToLocalChecked(), Nan::New(run).ToLocalChecked());
     entry->Set(Nan::New("RunLength").ToLocalChecked(), Nan::New(runLength).ToLocalChecked());
-    entries->Set(i, entry);
-    i++;
+    entries->Set(iter, entry);
+    iter++;
   }
+  wrapper->rleIndex_ = rleMax;
+  double percent = (double)wrapper->rleIndex_ / table.size();
+  percent = (percent > 1) ? 1 : percent;
+  rleTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   rleTable->Set(Nan::New("entries").ToLocalChecked(), entries);
   return rleTable;
 }

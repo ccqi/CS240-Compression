@@ -11,7 +11,7 @@
 </table>
 <div class="table-content {{type}}">
 <table class="table table-striped table-hover table-display table-bordered">
-<tbody>
+  <tbody>
   <tr ng-repeat="entry in table.entries">
     <td 
       ng-repeat="col in table.columns"
@@ -21,7 +21,14 @@
       {{entry[col]}}
     </td>
   </tr>
+  
   </tbody>
 </table>
+<button 
+  ng-if="table.percent < 1" 
+  class="btn btn-default btn-more"
+  ng-click="expand()"
+  >See more...
+</button>
 </div>
 </div>

@@ -5,7 +5,8 @@ angular.module('Compression').controller('MainCtrl',
   'C9nAPI',
   '$compile',
   'Highlight',
-  function($scope, C9nAPI, $compile, Highlight) {
+  'config',
+  function($scope, C9nAPI, $compile, Highlight, config) {
     $scope.submitted = false;
     $scope.method = 'BWT';
     $scope.methods = [
@@ -29,7 +30,8 @@ angular.module('Compression').controller('MainCtrl',
         angular.element(document.querySelector('#rootContainer')).append(root);
       }
     });
-    
+   
+
     self.processOutput = function(output) {
       var textLen = 0;
       var info = {};
@@ -47,6 +49,23 @@ angular.module('Compression').controller('MainCtrl',
       }
       return output;
     }
+    
+    $scope.expand = function() {
+      C9nAPI.getData({'type': $scope.method}).then(
+        function(response){
+          console.log('got more data...');
+        
+          var entries = response.data.data;
+          $scope.response.encoding.percent = response.data.percent;
+          for (var i = 0; i < entries.length; i++) {
+            $scope.info.push(entries[i]);
+          }
+        },
+        function(response) {
+          console.log('failed');
+        }
+      )
+    };
 
     $scope.submit = function() {
       var request = {
@@ -55,24 +74,31 @@ angular.module('Compression').controller('MainCtrl',
       };
       C9nAPI.encode(request).then(
         function(response) {
-          console.log('success');
-
-          $scope.response = response.data;
-          if ($scope.response.encoding.data){
-            $scope.info = processOutput($scope.response.encoding.data);
-          }
-
-          $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
-          if ($scope.response.encoding.huffmanTrie) {
-            $scope.huffmanTree = {
-              'key': 'root',
-              'value': $scope.response.encoding.huffmanTrie
-            };
-          }
-          else {
-            $scope.huffmanTree = undefined;
-          }
-          $scope.submitted = true;
+          console.log(response.data);
+          var params = {
+            'type': $scope.method,
+            'max': config.max.table
+          };
+          C9nAPI.get(params).then(
+            function(response) {
+              console.log('got data');
+              $scope.response = response.data;
+              if ($scope.response.encoding.data) {
+                $scope.info = processOutput($scope.response.encoding.data);
+              }
+              $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
+              if ($scope.response.encoding.huffmanTrie) {
+                $scope.huffmanTree = {
+                  'key': 'root',
+                  'value': $scope.response.encoding.huffmanTrie
+                };
+              }
+              else {
+                $scope.huffmanTree = undefined;
+              }
+              $scope.submitted = true;
+            }
+          )
         },
         function(error) {
           console.log('compression failed ');

@@ -13,6 +13,7 @@ TextComponent::~TextComponent(){
 void TextComponent::setEncoding(Encoding * encoding){
     encoding_ = encoding;
 }
+
 Encoding * TextComponent::getEncoding() const{
     return encoding_;
 }

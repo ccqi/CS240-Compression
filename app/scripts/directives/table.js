@@ -1,4 +1,4 @@
-angular.module('Compression').directive('encodingTable', function($compile, $window, Highlight) {
+angular.module('Compression').directive('encodingTable', function($compile, $window, C9nAPI, Highlight) {
   var self = this;
 
   return {
@@ -25,6 +25,23 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
         // Delete the DIV
         document.body.removeChild(scrollDiv);
       };
+
+      scope.expand = function() {
+        C9nAPI.getTable({'type': scope.type}).then(
+          function(response){
+            console.log('got more table data...');
+            var entries = response.data.entries;
+            scope.table.percent = response.data.percent;
+            for (var i = 0; i < entries.length; i++) {
+              scope.table.entries.push(entries[i]);
+            }
+          },
+          function(response) {
+            console.log('failed');
+          }
+        )
+      };
+
       scope.resizeTable = function() {
         $('.table-head').removeAttr('style');
         width = $('.table-head').width() - scope.scrollbarWidth;

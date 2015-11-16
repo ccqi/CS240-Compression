@@ -5,7 +5,7 @@
     <script src="//cdn.jsdelivr.net/jquery.scrollto/2.1.2/jquery.scrollTo.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-route.min.js"></script>
-    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.14.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.1/ui-bootstrap-tpls.min.js"></script>
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/services/API.js"></script>
@@ -57,9 +57,15 @@
           <uib-tabset class="text-display">
             <uib-tab  ng-repeat="type in response.encoding.formats" heading={{type}}>
               <data type="response.method" ng-model="info"></data>
-            </uib-tab>
-            
+            </uib-tab> 
           </uib-tabset>
+          <button 
+            class="btn btn-default btn-data" 
+            ng-if="response.encoding.percent < 1"
+            ng-click="expand()"
+            >
+            ...more
+          </button>
         </div>
         <div ng-if="response.encoding.table && response.method=='LZW'">
           <div class="col-md-6 transparent panel panel-default" >
@@ -81,7 +87,7 @@
           
           <div class="panel panel-default panel-transparent" ng-if="response.encoding.table && response.method=='RLE'">
             <div class="panel-heading heading-big">RLE Table</div>
-            <encoding-table type="rle_encoding" ng-model="response.encoding.table"></encoding-table> 
+            <encoding-table type="'RLE'" ng-model="response.encoding.table"></encoding-table> 
           </div>
           <div class="panel panel-default"  ng-if="huffmanTree">
             <div class="panel-heading heading-big">Huffman Tree</div>

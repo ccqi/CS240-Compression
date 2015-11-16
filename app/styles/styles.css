@@ -14,6 +14,20 @@
   color: purple;
 }
 
+.btn-more {
+  width: 100%;
+  border: None;
+}
+
+.btn-data {
+  width: 100%;
+  background-color: inherit;
+  font-size: 20px;
+  border: none;
+  text-align: right;
+}
+
+
 .float-right {
   float: right
 }

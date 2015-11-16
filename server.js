@@ -24,13 +24,31 @@ var server = app.listen(3000, function () {
 
 });
 
+var encoder = new addon.TextWrapper();
+
 app.post('/api/encode', function(req, res) {
-  var textWrapper = new addon.TextWrapper(req.body.data);
-  var encoding = textWrapper.encode(req.body.data, req.body.method);
-  console.log(encoding);
+  encoder.set(req.body.data);
+  encoder.encode(req.body.method);
+  res.send('sucessfully encoded message');
+});
+
+app.get('/api', function(req, res) {
+  var encoding = encoder.get(req.query.type, req.query.max);
   res.setHeader('Content-Type', 'application/json');
   res.send({
-    'method': req.body.method,
+    'method': req.query.type,
     'encoding': encoding
   });
+});
+
+app.get('/api/table', function(req, res) {
+  var table = encoder.getTable(req.query.type);
+  res.setHeader('Content-Type', 'application/json');
+  res.send(table);
+});
+
+app.get('/api/data', function(req, res) {
+  var data = encoder.getData(req.query.type);
+  res.setHeader('Content-Type', 'application/json');
+  res.send(data);
 });

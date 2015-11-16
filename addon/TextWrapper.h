@@ -27,20 +27,31 @@ class TextWrapper : public Nan::ObjectWrap {
   static void Init(v8Object exports);
 
  private:
-  explicit TextWrapper(Encoding * encoding);
+  explicit TextWrapper();
   ~TextWrapper();
+  void setEncoding(Encoding * encoding);
 
   static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
+  static void Set(const Nan::FunctionCallbackInfo<v8::Value>& info); 
+  static void Get(const Nan::FunctionCallbackInfo<v8::Value>& args); 
+  static void GetTable(const Nan::FunctionCallbackInfo<v8::Value>& args); 
+  static void GetData(const Nan::FunctionCallbackInfo<v8::Value>& args); 
   static void Encode(const Nan::FunctionCallbackInfo<v8::Value>& args); 
   static void Decode(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static Nan::Persistent<v8::Function> constructor;
   static TextComponent * setDecorator(std::string type, TextComponent * text);
-  static v8Array getData(std::string, Encoding *, TextComponent *);
+  static v8Array formatData(std::string, Encoding *, TextComponent *, TextWrapper*);
   static v8Array getFormats(std::vector<std::string>);
-  static v8Object formatLZWTable(std::map<int,std::string>, std::deque<std::tuple<std::string, int, BITS> >);
-  static v8Object formatRLETable(std::deque<std::tuple<std::string,BITS, BITS> >);
+  static v8Object formatSymbolTable(std::map<int,std::string>);
+  static v8Object formatOutputTable(std::deque<std::tuple<std::string, int, BITS> >, TextWrapper*);
+  static v8Object formatRLETable(std::deque<std::tuple<std::string,BITS, BITS> >, TextWrapper*);
   static v8Object formatHuffmanTrie(Trie*);
   TextComponent * component_;
+  int rleIndex_;
+  int lzwIndex_;
+  int huffmanIndex_;
+  int dataIndex_;
+  int max_;
 };
 
 #endif
