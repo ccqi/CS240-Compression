@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var addon = require('./addon/build/Release/compression.node');
-
+var mkdirp = require('mkdirp');
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -23,6 +23,21 @@ var server = app.listen(3000, function () {
   console.log('Example app listening at http://localhost:3000...');
 
 });
+var rmdir = require( 'rmdir' );
+var CronJob = require('cron').CronJob;
+var purgeFiles = new CronJob('00 30 02 * * *', 
+  function() {
+    rmdir('app/files', function ( err, dirs, files ){
+      console.log( dirs );
+      console.log( files );
+      console.log( 'all files are removed' );
+    });
+  },
+  function() {
+    console.log('cron job ended');
+  }, 
+  true
+);
 
 var encoder = new addon.TextWrapper();
 
@@ -39,6 +54,27 @@ app.get('/api', function(req, res) {
     'method': req.query.type,
     'encoding': encoding
   });
+});
+
+app.post('/api/save', function(req, res) {
+  var dir = 'app/files';
+  var name = 'output';
+  var extension = 'bin';
+  //make directory if it doesn't already exist
+  mkdirp(dir, function(err) {
+    if (err) {
+      console.error(err);
+    } else {
+      var timestamp = Math.floor(new Date() / 1000);     
+      var filename = name + '_' + timestamp + '.' + extension;
+      var path = dir + '/' + filename;
+      encoder.write(path);
+      console.log('New file: ' + filename + ' saved');
+      res.setHeader('Content-Type', 'text/plain');
+      res.send(filename);
+    }
+  });
+  
 });
 
 app.get('/api/table', function(req, res) {

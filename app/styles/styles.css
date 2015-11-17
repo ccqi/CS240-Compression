@@ -57,6 +57,7 @@
   word-wrap: break-word;
   cursor: pointer;
   font-size: 20px;
+  margin-bottom: 15px;
 }
 
 .table-head {
@@ -93,7 +94,8 @@ div .lzw {
   background-color: inherit;
 }
 
-* {margin: 0; padding: 0;}
+/* {margin: 0; padding: 0;}*/
+
 .tree {
     min-height:20px;
     padding:19px;

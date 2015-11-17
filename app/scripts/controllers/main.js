@@ -31,6 +31,19 @@ angular.module('Compression').controller('MainCtrl',
       }
     });
    
+    $scope.download = function() {
+      C9nAPI.save().then(
+        function(response) {
+          var filename = response.data;
+          var anchor = angular.element('<a/>');
+          anchor.attr({
+            href: 'files/' + filename,
+            target: '_blank',
+            download: filename
+          })[0].click();
+        }
+      )  
+    }
 
     self.processOutput = function(output) {
       var textLen = 0;

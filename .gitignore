@@ -31,3 +31,6 @@ node_modules
 #object files
 *.o
 *.d
+
+#Temp files
+app/files

@@ -56,6 +56,7 @@ void TextWrapper::Init(v8Object exports) {
   Nan::SetPrototypeMethod(tpl, "getData", GetData);
   Nan::SetPrototypeMethod(tpl, "getTable", GetTable);
   Nan::SetPrototypeMethod(tpl, "set", Set);
+  Nan::SetPrototypeMethod(tpl, "write", Write);
 
   constructor.Reset(tpl->GetFunction());
   exports->Set(Nan::New("TextWrapper").ToLocalChecked(), tpl->GetFunction());
@@ -106,6 +107,28 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   wrapper->lzwIndex_ = 0;
   wrapper->huffmanIndex_ = 0;
   wrapper->dataIndex_ = 0;
+  args.GetReturnValue().Set(args.This());
+}
+
+void TextWrapper::Write(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  
+  if (args.Length() < 1) {
+    Nan::ThrowTypeError("Wrong number of arguments");
+    return;
+  }
+  
+  // convert argument to string
+  v8::String::Utf8Value param1(args[0]->ToString());
+  string filePath = string(*param1);
+  // unwrap the object
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  TextComponent * component = wrapper->component_;
+  Encoding * encoding = component->getEncoding();
+
+  std::ofstream myFile;
+  myFile.open(filePath, ios::binary);
+  encoding->writeBinary(myFile);
+  
   args.GetReturnValue().Set(args.This());
 }
 

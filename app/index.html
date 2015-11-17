@@ -83,25 +83,26 @@
           </div>
         </div>
 
-        <div class="col-md-6">
-          
+        <div class="col-md-6"> 
           <div class="panel panel-default panel-transparent" ng-if="response.encoding.table && response.method=='RLE'">
             <div class="panel-heading heading-big">RLE Table</div>
             <encoding-table type="'RLE'" ng-model="response.encoding.table"></encoding-table> 
           </div>
           <div class="panel panel-default"  ng-if="huffmanTree">
             <div class="panel-heading heading-big">Huffman Tree</div>
-            <div class="tree clearfix">
-              <div ng-style="{'overflow': 'auto'}"></div>
-              <ul id="rootContainer">
-                <tree id="root" ng-model="huffmanTree"></tree>
-              </ul>
+              <div class="tree clearfix">
+                <div ng-style="{'overflow': 'auto'}"></div>
+                  <ul id="rootContainer">
+                    <tree id="root" ng-model="huffmanTree"></tree>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
-          </div>
         </div>
-        </div>
-        <button class="btn btn-primary">Decode</button>
+        <button class="btn btn-primary" ng-click="download()">
+          Export
+        </button>
       </div>
     </div>
   </body>
