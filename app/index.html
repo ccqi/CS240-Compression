@@ -56,13 +56,16 @@
           <div class="col-md-6">
           <uib-tabset class="text-display">
             <uib-tab  ng-repeat="type in response.encoding.formats" heading={{type}}>
+            <div class="data">
               <data type="response.method" ng-model="info"></data>
+            </div>
             </uib-tab> 
           </uib-tabset>
           <button 
             class="btn btn-default btn-data" 
             ng-if="response.encoding.percent < 1"
             ng-click="expand()"
+            ng-mouseup="blur()"
             >
             ...more
           </button>

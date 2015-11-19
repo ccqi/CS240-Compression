@@ -6,7 +6,8 @@ Nan::Persistent<v8::Function> TextWrapper::constructor;
 
 TextWrapper::TextWrapper(){
   rleIndex_ = 0;
-  lzwIndex_ = 0;
+  symbolIndex_ = 128;
+  outputIndex_ = 0;
   huffmanIndex_ = 0;
   dataIndex_ = 0;
   max_ = 50;
@@ -104,7 +105,8 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   // encode
   Encoding * encoding = wrapper->component_->encode(); 
   wrapper->rleIndex_ = 0;
-  wrapper->lzwIndex_ = 0;
+  wrapper->symbolIndex_ = 128;
+  wrapper->outputIndex_ = 0;
   wrapper->huffmanIndex_ = 0;
   wrapper->dataIndex_ = 0;
   args.GetReturnValue().Set(args.This());
@@ -159,7 +161,7 @@ void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
     deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
     v8Object table = Nan::New<v8::Object>();
-    table->Set(Nan::New("symbol").ToLocalChecked(), formatSymbolTable(symbolTable));
+    table->Set(Nan::New("symbol").ToLocalChecked(), formatSymbolTable(symbolTable, wrapper));
     table->Set(Nan::New("output").ToLocalChecked(), formatOutputTable(outputTable, wrapper));
     result->Set(Nan::New("table").ToLocalChecked(), table);
   }
@@ -207,7 +209,7 @@ void TextWrapper::GetTable(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   v8Object result;
   if (type == "symbol") {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
-    result = formatSymbolTable(symbolTable);
+    result = formatSymbolTable(symbolTable, wrapper);
   }
   if (type == "output") {
     deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
@@ -273,7 +275,7 @@ v8Array TextWrapper::formatData(string type, Encoding* encoding, TextComponent *
   return data;
 }
 
-v8Object TextWrapper::formatSymbolTable(map<int,string> sTable) {
+v8Object TextWrapper::formatSymbolTable(map<int,string> sTable, TextWrapper * wrapper) {
   
   v8Object symbolTable = Nan::New<v8::Object>(); 
   v8Array sCols = Nan::New<v8::Array>();
@@ -282,15 +284,22 @@ v8Object TextWrapper::formatSymbolTable(map<int,string> sTable) {
   symbolTable->Set(Nan::New("columns").ToLocalChecked(), sCols);
   v8Array sList = Nan::New<v8::Array>();
   int i = 0;
+  int lzwMax = (wrapper->symbolIndex_ + wrapper->max_ < sTable.size() + 128) ? wrapper->symbolIndex_ + wrapper->max_ : sTable.size() + 128;
   for (auto it = sTable.begin(); it!=sTable.end(); ++it) {
-    v8Object entry = Nan::New<v8::Object>();
-    string s = Encoding::convertToText(it->second);
-    entry->Set(Nan::New("Decimal").ToLocalChecked(), Nan::New(it->first));
-    entry->Set(Nan::New("Symbol").ToLocalChecked(), Nan::New(s).ToLocalChecked());
-    sList->Set(i, entry);
-    i++;
+    if(it->first <= lzwMax && it->first > wrapper->symbolIndex_) {
+      v8Object entry = Nan::New<v8::Object>();
+      string s = Encoding::convertToText(it->second);
+      entry->Set(Nan::New("Decimal").ToLocalChecked(), Nan::New(it->first));
+      entry->Set(Nan::New("Symbol").ToLocalChecked(), Nan::New(s).ToLocalChecked());
+      sList->Set(i, entry);
+      i++;
+    }
   }
   symbolTable->Set(Nan::New("entries").ToLocalChecked(), sList);
+  wrapper->symbolIndex_ = lzwMax;
+  double percent = (double)wrapper->symbolIndex_ / (sTable.size() + 128);
+  percent = (percent > 1) ? 1 : percent;
+  symbolTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   return symbolTable;
 }
 
@@ -304,8 +313,8 @@ v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, 
   outputTable->Set(Nan::New("columns").ToLocalChecked(), oCols);
   v8Array oList = Nan::New<v8::Array>();
   int iter = 0;
-  int lzwMax = (wrapper->lzwIndex_ + wrapper->max_ < oTable.size()) ? wrapper->lzwIndex_ + wrapper->max_ : oTable.size();
-  for (int i = wrapper->lzwIndex_; i < lzwMax; i++) {
+  int lzwMax = (wrapper->outputIndex_ + wrapper->max_ < oTable.size()) ? wrapper->outputIndex_ + wrapper->max_ : oTable.size();
+  for (int i = wrapper->outputIndex_; i < lzwMax; i++) {
     v8Object entry = Nan::New<v8::Object>();
     tuple<string, int, BITS> tuple = oTable[i];
     string key = get<0>(tuple);
@@ -317,8 +326,8 @@ v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, 
     oList->Set(iter, entry);
     iter++;
   }
-  wrapper->lzwIndex_ = lzwMax;
-  double percent = (double)wrapper->lzwIndex_ / oTable.size();
+  wrapper->outputIndex_ = lzwMax;
+  double percent = (double)wrapper->outputIndex_ / oTable.size();
   percent = (percent > 1) ? 1 : percent;
   outputTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   outputTable->Set(Nan::New("entries").ToLocalChecked(), oList);

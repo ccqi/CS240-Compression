@@ -43,13 +43,14 @@ class TextWrapper : public Nan::ObjectWrap {
   static TextComponent * setDecorator(std::string type, TextComponent * text);
   static v8Array formatData(std::string, Encoding *, TextComponent *, TextWrapper*);
   static v8Array getFormats(std::vector<std::string>);
-  static v8Object formatSymbolTable(std::map<int,std::string>);
+  static v8Object formatSymbolTable(std::map<int,std::string>, TextWrapper*);
   static v8Object formatOutputTable(std::deque<std::tuple<std::string, int, BITS> >, TextWrapper*);
   static v8Object formatRLETable(std::deque<std::tuple<std::string,BITS, BITS> >, TextWrapper*);
   static v8Object formatHuffmanTrie(Trie*);
   TextComponent * component_;
   int rleIndex_;
-  int lzwIndex_;
+  int symbolIndex_;
+  int outputIndex_;
   int huffmanIndex_;
   int dataIndex_;
   int max_;

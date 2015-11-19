@@ -60,9 +60,24 @@ angular.module('Compression').controller('MainCtrl',
         }
         output[i].binary = binary;
       }
+      output.textLength = textLen;
       return output;
     }
-    
+    self.processEntry = function(entry) {
+      var len = $scope.info.textLength;
+      var binary = '';
+      var curBinary = entry.binary;
+      for(var i = 0; i < curBinary.length; i++) {
+        len++;
+        binary += curBinary[i];
+        if (len % 8 == 0) {
+          binary += ' ';
+        }
+      }
+      $scope.info.textLength = len;
+      entry.binary = binary;
+      return entry;
+    }
     $scope.expand = function() {
       C9nAPI.getData({'type': $scope.method}).then(
         function(response){
@@ -70,16 +85,20 @@ angular.module('Compression').controller('MainCtrl',
         
           var entries = response.data.data;
           $scope.response.encoding.percent = response.data.percent;
+          var info = $scope.info
           for (var i = 0; i < entries.length; i++) {
-            $scope.info.push(entries[i]);
+            $scope.info.push(processEntry(entries[i]));
           }
         },
         function(response) {
           console.log('failed');
         }
-      )
-    };
+      );
 
+    };
+    $scope.blur = function() {
+      $('.btn').blur();
+    }
     $scope.submit = function() {
       var request = {
         'method': $scope.method,

@@ -19,6 +19,14 @@
   border: None;
 }
 
+button:active {
+  outline: none !important;
+}
+
+button:focus {
+  outline: none !important;
+}
+
 .btn-data {
   width: 100%;
   background-color: inherit;
@@ -27,13 +35,14 @@
   text-align: right;
 }
 
-
 .float-right {
   float: right
 }
+
 .inline {
   display: inline
 }
+
 .scrollbar-measure {
   width: 100px;
   height: 100px;
@@ -46,7 +55,10 @@
   table-layout: fixed;
   margin-bottom: 0px;
 }
-
+.data {
+  max-height: 350px;
+  overflow-y: auto;
+}
 .table-content {
   cursor: pointer;
   height: 350px;
