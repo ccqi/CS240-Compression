@@ -5,12 +5,6 @@ using namespace std;
 Nan::Persistent<v8::Function> TextWrapper::constructor;
 
 TextWrapper::TextWrapper(){
-  rleIndex_ = 0;
-  symbolIndex_ = 128;
-  outputIndex_ = 0;
-  huffmanIndex_ = 0;
-  dataIndex_ = 0;
-  max_ = 50;
 }
 
 TextWrapper::~TextWrapper() {
@@ -104,11 +98,6 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   
   // encode
   Encoding * encoding = wrapper->component_->encode(); 
-  wrapper->rleIndex_ = 0;
-  wrapper->symbolIndex_ = 128;
-  wrapper->outputIndex_ = 0;
-  wrapper->huffmanIndex_ = 0;
-  wrapper->dataIndex_ = 0;
   args.GetReturnValue().Set(args.This());
 }
 
@@ -144,14 +133,21 @@ void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   // convert argument to string
   v8::String::Utf8Value param1(args[0]->ToString());
   string type = string(*param1);
-  wrapper->max_ = args[1]->Int32Value();
-  
+
+  // get max values from config
+  v8Object arg1  = args[1]->ToObject();
+  int maxData = arg1->Get(Nan::New("data").ToLocalChecked())->Int32Value();
+  maxData = (maxData == 0) ? 50: maxData;
+  int maxTree = arg1->Get(Nan::New("tree").ToLocalChecked())->Int32Value();
+  maxTree = (maxTree == 0) ? 3: maxTree;
+  int maxTable = arg1->Get(Nan::New("table").ToLocalChecked())->Int32Value();
+  maxTable = (maxTable == 0) ? 50: maxTable;
   // convert result to json
   v8Object result = Nan::New<v8::Object>();
   vector<string> format = component->getFormat();
   result->Set(Nan::New("formats").ToLocalChecked(), getFormats(format));
-  result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, wrapper));
-  double percent = (double)wrapper->dataIndex_ / encoding->size();
+  result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, 0, maxData));
+  double percent = (double)maxData / encoding->size();
   percent = (percent > 1) ? 1 : percent;
   result->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   result->Set(Nan::New("compression_ratio").ToLocalChecked(), Nan::New(component->getCompressionRatio()));
@@ -161,18 +157,22 @@ void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
     deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
     v8Object table = Nan::New<v8::Object>();
-    table->Set(Nan::New("symbol").ToLocalChecked(), formatSymbolTable(symbolTable, wrapper));
-    table->Set(Nan::New("output").ToLocalChecked(), formatOutputTable(outputTable, wrapper));
+    table->Set(Nan::New("symbol").ToLocalChecked(), formatSymbolTable(symbolTable, 128, maxTable));
+    table->Set(Nan::New("output").ToLocalChecked(), formatOutputTable(outputTable, 0, maxTable));
     result->Set(Nan::New("table").ToLocalChecked(), table);
   }
   else if (type == "RLE") {
     deque<tuple<string,BITS,BITS> > table = reinterpret_cast<RLEEncoder*>(component)->getTable();
-    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table, wrapper));
+    result->Set(Nan::New("table").ToLocalChecked(), formatRLETable(table, 0, maxTable));
   }
   else if (type == "Huffman") {
     Trie * huffmanTrie = reinterpret_cast<HuffmanEncoder*>(component)->getHuffmanTrie();
+    int depth = reinterpret_cast<HuffmanEncoder*>(component)->getTreeDepth();
+    double percentage = (depth == 0) ? 0: (double)maxTree / depth;
     Trie * iter = huffmanTrie;
-    result->Set(Nan::New("huffmanTrie").ToLocalChecked(), formatHuffmanTrie(iter));
+    v8Object huffmanTree = formatHuffmanTrie(iter, 0, maxTree);
+    result->Set(Nan::New("treePercentage").ToLocalChecked(), Nan::New(percentage));
+    result->Set(Nan::New("huffmanTrie").ToLocalChecked(), huffmanTree);
   }
 
   // set return value to object
@@ -186,11 +186,15 @@ void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   Encoding * encoding = component->getEncoding();
   // convert argument to string
   v8::String::Utf8Value param1(args[0]->ToString());
-  string type = string(*param1);
-  
+  string type = string(*param1); 
+  int start  = args[1]->Int32Value();
+  int increment  = args[2]->Int32Value();
+  if (increment == 0) {
+    increment = 50;
+  }
   v8Object result = Nan::New<v8::Object>();  
-  result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, wrapper));
-  double percent = (double)wrapper->dataIndex_ / encoding->size();
+  result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, start, increment));
+  double percent = (double)(start + increment)  / encoding->size();
   percent = (percent > 1) ? 1 : percent;
   result->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   // set return value to object
@@ -202,22 +206,29 @@ void TextWrapper::GetTable(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
   TextComponent * component = wrapper->component_;
   Encoding * encoding = component->getEncoding();
-  
+   
   // convert argument to string
   v8::String::Utf8Value param1(args[0]->ToString());
   string type = string(*param1);
+  
+  int start  = args[1]->Int32Value();
+  int increment  = args[2]->Int32Value();
+  if (increment == 0) {
+    increment = 50;
+  }
+
   v8Object result;
   if (type == "symbol") {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
-    result = formatSymbolTable(symbolTable, wrapper);
+    result = formatSymbolTable(symbolTable, start + 128, increment);
   }
   if (type == "output") {
     deque<tuple<string,int, BITS> > outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
-    result = formatOutputTable(outputTable, wrapper);
+    result = formatOutputTable(outputTable, start, increment);
   }
   else if (type == "RLE") {
     deque<tuple<string,BITS,BITS> > table = reinterpret_cast<RLEEncoder*>(component)->getTable();
-    result = formatRLETable(table, wrapper);
+    result = formatRLETable(table, start, increment);
   }
   
   // set return value to object
@@ -231,15 +242,15 @@ v8Array TextWrapper::getFormats(vector<string> formats) {
   }
   return fieldArray;
 }
-v8Array TextWrapper::formatData(string type, Encoding* encoding, TextComponent * component, TextWrapper * wrapper) {
+v8Array TextWrapper::formatData(string type, Encoding* encoding, TextComponent * component, int start, int increment) {
   v8Array data = Nan::New<v8::Array>();
   deque<tuple<string,int, BITS> > outputTable;
   if (type == "LZW") {
       outputTable = reinterpret_cast<LZWEncoder*>(component)->getOutput();
   }
   int iter = 0;
-  int dataMax = (wrapper->dataIndex_ + wrapper->max_ < encoding->size()) ? wrapper->dataIndex_ + wrapper->max_ : encoding->size();
-  for (int i = wrapper->dataIndex_; i < dataMax; i++) {
+  int dataMax = ((start + increment) < encoding->size()) ? (start + increment) : encoding->size();
+  for (int i = start; i < dataMax; i++) {
     v8Object entry = Nan::New<v8::Object>();
     pair<string, BITS> entryData = encoding->get(i);
     stringstream ss;
@@ -270,12 +281,11 @@ v8Array TextWrapper::formatData(string type, Encoding* encoding, TextComponent *
     data->Set(iter, entry);
     iter++;
   }
-  wrapper->dataIndex_ = dataMax;
   
   return data;
 }
 
-v8Object TextWrapper::formatSymbolTable(map<int,string> sTable, TextWrapper * wrapper) {
+v8Object TextWrapper::formatSymbolTable(map<int,string> sTable, int start, int increment) {
   
   v8Object symbolTable = Nan::New<v8::Object>(); 
   v8Array sCols = Nan::New<v8::Array>();
@@ -284,9 +294,9 @@ v8Object TextWrapper::formatSymbolTable(map<int,string> sTable, TextWrapper * wr
   symbolTable->Set(Nan::New("columns").ToLocalChecked(), sCols);
   v8Array sList = Nan::New<v8::Array>();
   int i = 0;
-  int lzwMax = (wrapper->symbolIndex_ + wrapper->max_ < sTable.size() + 128) ? wrapper->symbolIndex_ + wrapper->max_ : sTable.size() + 128;
+  int lzwMax = ((start + increment) < sTable.size() + 128) ? (start + increment) : (sTable.size() + 128);
   for (auto it = sTable.begin(); it!=sTable.end(); ++it) {
-    if(it->first <= lzwMax && it->first > wrapper->symbolIndex_) {
+    if(it->first <= lzwMax && it->first > start) {
       v8Object entry = Nan::New<v8::Object>();
       string s = Encoding::convertToText(it->second);
       entry->Set(Nan::New("Decimal").ToLocalChecked(), Nan::New(it->first));
@@ -296,14 +306,13 @@ v8Object TextWrapper::formatSymbolTable(map<int,string> sTable, TextWrapper * wr
     }
   }
   symbolTable->Set(Nan::New("entries").ToLocalChecked(), sList);
-  wrapper->symbolIndex_ = lzwMax;
-  double percent = (double)wrapper->symbolIndex_ / (sTable.size() + 128);
+  double percent = (double)lzwMax / (sTable.size() + 128);
   percent = (percent > 1) ? 1 : percent;
   symbolTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   return symbolTable;
 }
 
-v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, TextWrapper * wrapper) {
+v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, int start, int increment) {
   
   // output table
   v8Object outputTable = Nan::New<v8::Object>(); 
@@ -313,8 +322,8 @@ v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, 
   outputTable->Set(Nan::New("columns").ToLocalChecked(), oCols);
   v8Array oList = Nan::New<v8::Array>();
   int iter = 0;
-  int lzwMax = (wrapper->outputIndex_ + wrapper->max_ < oTable.size()) ? wrapper->outputIndex_ + wrapper->max_ : oTable.size();
-  for (int i = wrapper->outputIndex_; i < lzwMax; i++) {
+  int lzwMax = ((start + increment) < oTable.size()) ? (start + increment): oTable.size();
+  for (int i = start; i < lzwMax; i++) {
     v8Object entry = Nan::New<v8::Object>();
     tuple<string, int, BITS> tuple = oTable[i];
     string key = get<0>(tuple);
@@ -326,15 +335,14 @@ v8Object TextWrapper::formatOutputTable(deque<tuple<string,int, BITS> > oTable, 
     oList->Set(iter, entry);
     iter++;
   }
-  wrapper->outputIndex_ = lzwMax;
-  double percent = (double)wrapper->outputIndex_ / oTable.size();
+  double percent = (double)lzwMax / oTable.size();
   percent = (percent > 1) ? 1 : percent;
   outputTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   outputTable->Set(Nan::New("entries").ToLocalChecked(), oList);
   return outputTable;
 }
 
-v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table, TextWrapper * wrapper) {
+v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table, int start, int increment) {
   // output table
   v8Object rleTable = Nan::New<v8::Object>(); 
   v8Array cols = Nan::New<v8::Array>();
@@ -344,8 +352,8 @@ v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table, Text
   rleTable->Set(Nan::New("columns").ToLocalChecked(), cols);
   v8Array entries = Nan::New<v8::Array>();
   int iter = 0;
-  int rleMax = (wrapper->rleIndex_ + wrapper->max_ < table.size()) ? wrapper->rleIndex_ + wrapper->max_ : table.size();
-  for (int i = wrapper->rleIndex_; i < rleMax; i++) {
+  int rleMax = ((start + increment) < table.size()) ? (start + increment) : table.size();
+  for (int i = start; i < rleMax; i++) {
     v8Object entry = Nan::New<v8::Object>();
     tuple<string, BITS, BITS> tuple = table[i];
     string key = get<0>(tuple);
@@ -357,15 +365,14 @@ v8Object TextWrapper::formatRLETable(deque<tuple<string,BITS,BITS> > table, Text
     entries->Set(iter, entry);
     iter++;
   }
-  wrapper->rleIndex_ = rleMax;
-  double percent = (double)wrapper->rleIndex_ / table.size();
+  double percent = (double)rleMax / table.size();
   percent = (percent > 1) ? 1 : percent;
   rleTable->Set(Nan::New("percent").ToLocalChecked(), Nan::New(percent));
   rleTable->Set(Nan::New("entries").ToLocalChecked(), entries);
   return rleTable;
 }
 
-v8Object TextWrapper::formatHuffmanTrie(Trie * trie) {
+v8Object TextWrapper::formatHuffmanTrie(Trie * trie, int level, int maxLevel) {
   v8Object huffmanTrie = Nan::New<v8::Object>();
   if(trie->isLeaf){
     v8Object node = Nan::New<v8::Object>();
@@ -377,8 +384,10 @@ v8Object TextWrapper::formatHuffmanTrie(Trie * trie) {
     return node;
   }
   huffmanTrie->Set(Nan::New("freq").ToLocalChecked(), Nan::New(trie->freq));
-  huffmanTrie->Set(Nan::New("zero").ToLocalChecked(), formatHuffmanTrie(trie->zero));
-  huffmanTrie->Set(Nan::New("one").ToLocalChecked(), formatHuffmanTrie(trie->one));
+  if (level < maxLevel) {
+    huffmanTrie->Set(Nan::New("zero").ToLocalChecked(), formatHuffmanTrie(trie->zero, level + 1, maxLevel));
+    huffmanTrie->Set(Nan::New("one").ToLocalChecked(), formatHuffmanTrie(trie->one, level + 1, maxLevel));
+  }
   return huffmanTrie;
 }
 void TextWrapper::Decode(const Nan::FunctionCallbackInfo<v8::Value>& args) {

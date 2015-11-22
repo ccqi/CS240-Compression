@@ -4,6 +4,7 @@ using namespace std;
 
 HuffmanEncoder::HuffmanEncoder(TextComponent * component):Decorator(component){
     id_ = HUFFMAN;
+    depth_ = 0;
     format_.push_back("binary");
 }
 
@@ -86,8 +87,9 @@ Encoding * HuffmanEncoder::encode(){
     BITS prefix;
     HuffmanMap huffmanCodes;
     getHuffmanCodes(iter, prefix, huffmanCodes);
-
-
+    iter = huffmanTrie_;
+    depth_ = getDepth(iter);
+    depth_ = (depth_ == 0) ? 0: depth_ - 1;
     for(int i=0;i<size;i++){
         BYTE c = plainText[i];
         BITS curCode = huffmanCodes[c];
@@ -212,4 +214,15 @@ Trie* HuffmanEncoder::readTrie(BITS::iterator& it){
         trie->one = one;
         return trie;
     }
+}
+
+int HuffmanEncoder::getDepth(Trie * node) {
+  if (node) {
+    return 1 + max(getDepth(node->zero), getDepth(node->one));
+  }
+  return 0;
+}
+
+int HuffmanEncoder::getTreeDepth() {
+  return depth_;  
 }

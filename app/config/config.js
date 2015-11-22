@@ -4,8 +4,9 @@ angular.module('Compression')
 .constant('config', {
   'max': {
     'tree': '8',
-    'data': '1000',
-    'table': '50'
+    'data': '50',
+    'table': '50',
+    'tree': '3'
   },
   'popover': {
     'header': 'Algorithm',

@@ -47,11 +47,11 @@ app.post('/api/encode', function(req, res) {
   res.send('sucessfully encoded message');
 });
 
-app.get('/api', function(req, res) {
-  var encoding = encoder.get(req.query.type, req.query.max);
+app.post('/api', function(req, res) {
+  var encoding = encoder.get(req.body.type, req.body.max);
   res.setHeader('Content-Type', 'application/json');
   res.send({
-    'method': req.query.type,
+    'method': req.body.type,
     'encoding': encoding
   });
 });
@@ -78,13 +78,13 @@ app.post('/api/save', function(req, res) {
 });
 
 app.get('/api/table', function(req, res) {
-  var table = encoder.getTable(req.query.type);
+  var table = encoder.getTable(req.query.type, req.query.start, req.query.increment)
   res.setHeader('Content-Type', 'application/json');
   res.send(table);
 });
 
 app.get('/api/data', function(req, res) {
-  var data = encoder.getData(req.query.type);
+  var data = encoder.getData(req.query.type, req.query.start, req.query.max);
   res.setHeader('Content-Type', 'application/json');
   res.send(data);
 });

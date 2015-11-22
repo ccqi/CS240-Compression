@@ -41,19 +41,13 @@ class TextWrapper : public Nan::ObjectWrap {
   static void Decode(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static Nan::Persistent<v8::Function> constructor;
   static TextComponent * setDecorator(std::string type, TextComponent * text);
-  static v8Array formatData(std::string, Encoding *, TextComponent *, TextWrapper*);
+  static v8Array formatData(std::string, Encoding *, TextComponent *, int, int);
   static v8Array getFormats(std::vector<std::string>);
-  static v8Object formatSymbolTable(std::map<int,std::string>, TextWrapper*);
-  static v8Object formatOutputTable(std::deque<std::tuple<std::string, int, BITS> >, TextWrapper*);
-  static v8Object formatRLETable(std::deque<std::tuple<std::string,BITS, BITS> >, TextWrapper*);
-  static v8Object formatHuffmanTrie(Trie*);
+  static v8Object formatSymbolTable(std::map<int,std::string>, int, int);
+  static v8Object formatOutputTable(std::deque<std::tuple<std::string, int, BITS> >, int, int);
+  static v8Object formatRLETable(std::deque<std::tuple<std::string,BITS, BITS> >, int, int);
+  static v8Object formatHuffmanTrie(Trie*, int, int);
   TextComponent * component_;
-  int rleIndex_;
-  int symbolIndex_;
-  int outputIndex_;
-  int huffmanIndex_;
-  int dataIndex_;
-  int max_;
 };
 
 #endif

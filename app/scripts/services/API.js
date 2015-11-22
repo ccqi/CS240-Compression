@@ -5,9 +5,7 @@ angular.module('Compression').factory('C9nAPI', ['$http', function($http) {
     },
 
     get: function(request) {
-      return $http.get('api', {
-        params: request
-      });
+      return $http.post('api', request);
     },
     getTable: function(request) {
       return $http.get('api/table', {

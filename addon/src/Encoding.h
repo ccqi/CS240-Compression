@@ -10,6 +10,7 @@
 #include <map>
 #include <deque>
 #include <utility>
+#include <algorithm>
 
 typedef std::vector<bool> BITS;
 typedef unsigned char BYTE;

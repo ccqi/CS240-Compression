@@ -1,4 +1,4 @@
-angular.module('Compression').directive('encodingTable', function($compile, $window, C9nAPI, Highlight) {
+angular.module('Compression').directive('encodingTable', function($compile, $window, C9nAPI, Highlight, config) {
   var self = this;
 
   return {
@@ -24,10 +24,15 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
 
         // Delete the DIV
         document.body.removeChild(scrollDiv);
+        scope.start = parseInt(config.max.table);
       };
 
       scope.expand = function() {
-        C9nAPI.getTable({'type': scope.type}).then(
+        C9nAPI.getTable({
+          'type': scope.type,
+          'increment': config.max.table,
+          'start': scope.start
+        }).then(
           function(response){
             console.log('got more table data...');
             var entries = response.data.entries;
@@ -35,6 +40,7 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
             for (var i = 0; i < entries.length; i++) {
               scope.table.entries.push(entries[i]);
             }
+            scope.start += parseInt(config.max.table);
           },
           function(response) {
             console.log('failed');

@@ -79,10 +79,14 @@ angular.module('Compression').controller('MainCtrl',
       return entry;
     }
     $scope.expand = function() {
-      C9nAPI.getData({'type': $scope.method}).then(
+      C9nAPI.getData({
+        'type': $scope.method,
+        'start': $scope.start,
+        'increment': config.max.data
+      }).then(
         function(response){
           console.log('got more data...');
-        
+          $scope.start += parseInt(config.max.data); 
           var entries = response.data.data;
           $scope.response.encoding.percent = response.data.percent;
           var info = $scope.info
@@ -109,7 +113,7 @@ angular.module('Compression').controller('MainCtrl',
           console.log(response.data);
           var params = {
             'type': $scope.method,
-            'max': config.max.table
+            'max': config.max
           };
           C9nAPI.get(params).then(
             function(response) {
@@ -119,9 +123,16 @@ angular.module('Compression').controller('MainCtrl',
                 $scope.info = processOutput($scope.response.encoding.data);
               }
               $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
+              if ($scope.response.method == 'Huffman') {
+                $scope.col = 'col-md-5';
+              } else {
+                $scope.col = 'col-md-6';  
+              }
+              $scope.start = parseInt(config.max.data);
               if ($scope.response.encoding.huffmanTrie) {
                 $scope.huffmanTree = {
                   'key': 'root',
+                  'percent': $scope.response.encoding.treePercentage,
                   'value': $scope.response.encoding.huffmanTrie
                 };
               }
