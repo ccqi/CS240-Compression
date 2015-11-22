@@ -53,7 +53,7 @@
         </div>
         <div ng-if="info">
           <div class="row">
-            <div id="data" ng-class="col">
+            <div id="data" ng-class="col[response.method]">
               <uib-tabset class="text-display">
                 <uib-tab  ng-repeat="type in response.encoding.formats" heading={{type}}>
                 <div class="data">
@@ -67,7 +67,7 @@
                 ng-click="expand()"
                 ng-mouseup="blur()"
                 >
-                ...more
+                {{MORE.DATA}}
               </button>
             </div>
             
@@ -108,7 +108,7 @@
                     ng-if="huffmanTree.percent < 1"
                     ng-mouseup="blur()"
                   >
-                    ..this is a partial tree, the full tree is too large to be fully displayed
+                  {{MORE.TREE}}
                   </button>
               </div>
               
@@ -117,9 +117,9 @@
           
             <div class="row">
               <div class="col-md-12">
-                <button class="btn btn-primary" ng-click="download()">
-                  Export
-                </button>
+                <a href="files/{{filename}}" class="btn btn-primary">
+                  Download Encoding
+                </a>
               </div>
             </div>
       </div>

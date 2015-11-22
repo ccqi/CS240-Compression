@@ -13,6 +13,7 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
     link: function(scope, elm, attrs) {
       scope.name = 'table';
       scope.highlight = Highlight;
+      scope.MORE = 'See more...'
       scope.getScrollBarWidth = function() {
         // Create the measurement node
         var scrollDiv = document.createElement("div");
@@ -28,6 +29,9 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
       };
 
       scope.expand = function() {
+        if (scope.start >= config.absoluteMax.table) {
+          return;
+        }
         C9nAPI.getTable({
           'type': scope.type,
           'increment': config.max.table,
@@ -41,6 +45,9 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
               scope.table.entries.push(entries[i]);
             }
             scope.start += parseInt(config.max.table);
+            if (scope.start >= config.absoluteMax.table) {
+              scope.MORE = 'This table is too large to show more entries'
+            }
           },
           function(response) {
             console.log('failed');

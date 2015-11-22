@@ -1,0 +1,15 @@
+MVI 1
+1. Limit data using number of bytes - 2
+2. Click to show table entries, instead of hover - 1
+3. Work with multiple users, read/write from storage - 5
+4. Upload files - 2
+5. Host on AWS - 1
+6. Documentation - 2
+
+MVI 2
+1. Grunt, jshint?
+2. Investigate scroll to bug
+3. Decode
+4. Save huffman tree / tables
+5. Multiple encode/decode
+6. Jenkins tests

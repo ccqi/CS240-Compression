@@ -16,10 +16,22 @@ angular.module('Compression').controller('MainCtrl',
       'RLE',
       'Huffman'
     ]
+    $scope.col = {
+      'BWT': 'col-md-12',
+      'LZW': 'col-md-6',
+      'MTF': 'col-md-12',
+      'RLE': 'col-md-6',
+      'Huffman': 'col-md-5'
+    };
+
     $scope.highlight = Highlight;
     $scope.dataChanged = function() {
       $scope.size = $scope.data.length * 4;
     }
+    $scope.MORE = {
+      'DATA': 'See more...',
+      'TREE': 'This is a partial tree. The full tree is too large to be entirely displayed on this page.'
+    };
 
     $scope.$watch('huffmanTree', function() {
       // destroy and recompile tree view whenever huffmanTree changes
@@ -77,8 +89,12 @@ angular.module('Compression').controller('MainCtrl',
       $scope.info.textLength = len;
       entry.binary = binary;
       return entry;
-    }
+    };
+
     $scope.expand = function() {
+      if ($scope.start >= config.absoluteMax.data) {
+        return;
+      }
       C9nAPI.getData({
         'type': $scope.method,
         'start': $scope.start,
@@ -92,6 +108,9 @@ angular.module('Compression').controller('MainCtrl',
           var info = $scope.info
           for (var i = 0; i < entries.length; i++) {
             $scope.info.push(processEntry(entries[i]));
+          }
+          if ($scope.start >= config.absoluteMax.data) {
+            $scope.MORE.DATA = 'To see more, download the entire encoding...';
           }
         },
         function(response) {
@@ -110,7 +129,7 @@ angular.module('Compression').controller('MainCtrl',
       };
       C9nAPI.encode(request).then(
         function(response) {
-          console.log(response.data);
+          $scope.filename = response.data;
           var params = {
             'type': $scope.method,
             'max': config.max
@@ -118,16 +137,11 @@ angular.module('Compression').controller('MainCtrl',
           C9nAPI.get(params).then(
             function(response) {
               console.log('got data');
-              $scope.response = response.data;
+              $scope.response = response.data;         
               if ($scope.response.encoding.data) {
                 $scope.info = processOutput($scope.response.encoding.data);
               }
               $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
-              if ($scope.response.method == 'Huffman') {
-                $scope.col = 'col-md-5';
-              } else {
-                $scope.col = 'col-md-6';  
-              }
               $scope.start = parseInt(config.max.data);
               if ($scope.response.encoding.huffmanTrie) {
                 $scope.huffmanTree = {

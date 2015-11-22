@@ -42,9 +42,25 @@ var purgeFiles = new CronJob('00 30 02 * * *',
 var encoder = new addon.TextWrapper();
 
 app.post('/api/encode', function(req, res) {
-  encoder.set(req.body.data);
-  encoder.encode(req.body.method);
-  res.send('sucessfully encoded message');
+
+  // save encoding to file
+  var dir = 'app/files';
+  var name = 'output';
+  var extension = 'bin';
+  //make directory if it doesn't already exist
+  mkdirp(dir, function(err) {
+    if (err) {
+      console.error(err);
+    } else {
+      var timestamp = Math.floor(new Date() / 1000);     
+      var filename = name + '_' + timestamp + '.' + extension;
+      var path = dir + '/' + filename;
+      encoder.encode(path, req.body.data, req.body.method);
+      console.log('New file: ' + filename + ' saved');
+      res.setHeader('Content-Type', 'text/plain');
+      res.send(filename);
+    }
+  });
 });
 
 app.post('/api', function(req, res) {

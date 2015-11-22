@@ -50,8 +50,6 @@ void TextWrapper::Init(v8Object exports) {
   Nan::SetPrototypeMethod(tpl, "get", Get);
   Nan::SetPrototypeMethod(tpl, "getData", GetData);
   Nan::SetPrototypeMethod(tpl, "getTable", GetTable);
-  Nan::SetPrototypeMethod(tpl, "set", Set);
-  Nan::SetPrototypeMethod(tpl, "write", Write);
 
   constructor.Reset(tpl->GetFunction());
   exports->Set(Nan::New("TextWrapper").ToLocalChecked(), tpl->GetFunction());
@@ -88,16 +86,31 @@ void TextWrapper::Set(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   
-  // convert argument to string
+  // path
   v8::String::Utf8Value param1(args[0]->ToString());
-  string type = string(*param1);
+  string filePath = string(*param1);
+  
+  // data
+  v8::String::Utf8Value param2(args[1]->ToString());
+  std::string plainText = std::string(*param2);
+  
+  // method
+  v8::String::Utf8Value param3(args[2]->ToString());
+  string type = string(*param3);
 
-  // unwrap the object
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  Encoding * pt = new Encoding(plainText, TEXT);
+  wrapper->setEncoding(pt);
   wrapper->component_ = setDecorator(type, wrapper->component_);
   
   // encode
   Encoding * encoding = wrapper->component_->encode(); 
+  
+  // write to file
+  std::ofstream myFile;
+  myFile.open(filePath, ios::binary);
+  encoding->writeBinary(myFile);
+
   args.GetReturnValue().Set(args.This());
 }
 

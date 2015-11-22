@@ -8,6 +8,10 @@ angular.module('Compression')
     'table': '50',
     'tree': '3'
   },
+  'absoluteMax': {
+    'data': '300',
+    'table': '300'
+  },
   'popover': {
     'header': 'Algorithm',
     'sign': 'First bit of plain text',
