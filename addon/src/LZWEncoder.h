@@ -9,6 +9,7 @@ class LZWEncoder : public Decorator
 {
     public:
         LZWEncoder(TextComponent *);
+        LZWEncoder(BITS);
         virtual ~LZWEncoder();
         Encoding * encode();
         virtual void print(std::ofstream&);

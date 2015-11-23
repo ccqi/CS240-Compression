@@ -9,6 +9,24 @@ BWTransform::BWTransform(TextComponent * component):Decorator(component){
     format_.push_back("text");
 }
 
+BWTransform::BWTransform(BITS bits):Decorator(bits) {
+  id_ = BWT;
+  format_.push_back("binary");
+  format_.push_back("hex");
+  format_.push_back("text");
+  Encoding * encoding = new Encoding(bits);
+  BYTES bytes = encoding->getBytes();
+  encoding_->writeBits("header", id_, 8);
+  for(int i = 0; i < bytes.size(); i++) {
+    stringstream ss;
+    ss << "bwt";
+    if (i > 0) {
+      ss<<"_"<<(i+1);
+    }
+    encoding_->writeBits(ss.str(),(int)(bytes[i]),8);
+  }
+}
+
 BWTransform::~BWTransform(){}
 
 Encoding * BWTransform::encode(){
@@ -44,14 +62,14 @@ Encoding * BWTransform::encode(){
     return encoding_;
 
 }
+
+
+
 Encoding * BWTransform::getDecode(Encoding * encoding){
     BYTES bytes = encoding->getBytes();
     int size = encoding->getSize()/8;
-    //cout<<"Size:"<<size<<endl;
     BYTES cipherText;
-    //cout<<"Decode"<<endl;
     for(int i=0;i<size;i++){
-        //cout<<(int)bytes[i]<<" ";
         cipherText.push_back(bytes[i]);
     }
     vector< pair<char,int> > A;

@@ -8,7 +8,8 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
     restrict: 'E',
     scope: {
       type: '=',
-      table:'=ngModel'
+      table:'=ngModel',
+      filename: '='
     },
     link: function(scope, elm, attrs) {
       scope.name = 'table';
@@ -33,6 +34,7 @@ angular.module('Compression').directive('encodingTable', function($compile, $win
           return;
         }
         C9nAPI.getTable({
+          'filename': scope.filename,
           'type': scope.type,
           'increment': config.max.table,
           'start': scope.start

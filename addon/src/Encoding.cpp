@@ -325,6 +325,7 @@ int Encoding::readBits(int bit_size){
     }
     return acc;
 }
+
 int Encoding::getBinarySize(int max_size){
     int bitSize = 0;
     int iter=1;

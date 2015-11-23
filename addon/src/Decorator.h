@@ -18,6 +18,7 @@ class Decorator : public TextComponent
 {
     public:
         Decorator(TextComponent*);
+        Decorator(BITS);
         virtual ~Decorator();
     protected:
         virtual Encoding * encode();

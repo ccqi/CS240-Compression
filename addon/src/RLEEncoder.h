@@ -8,6 +8,7 @@ class RLEEncoder : public Decorator
 {
     public:
         RLEEncoder(TextComponent*);
+        RLEEncoder(BITS);
         virtual ~RLEEncoder();
         Encoding * encode();
         std::deque<std::tuple<std::string, BITS, BITS> > getTable() const;

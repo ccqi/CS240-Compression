@@ -9,6 +9,22 @@ MTFEncoder::MTFEncoder(TextComponent * component):Decorator(component){
     format_.push_back("hex");
 }
 
+MTFEncoder::MTFEncoder(BITS bits):Decorator(bits){
+    id_ = MTF;
+    format_.push_back("binary");
+    format_.push_back("hex");
+    encoding_->writeBits("header",id_,8);
+    string cipherText = Encoding::convertToString(bits);
+    for (int i = 0; i < cipherText.size(); i++) {
+      stringstream key;
+      key << "mtf";
+      if (i > 0) {
+        key << "_" << (i + 1);
+      }
+      encoding_->writeBits(key.str(),cipherText[i],8);
+    }
+}
+
 MTFEncoder::~MTFEncoder(){}
 
 
@@ -20,23 +36,6 @@ Encoding * MTFEncoder::encode(){
     for(int i=0;i<128;i++){
         alpha.push_back((char)i);
     }
-
-
-//    priority_queue< char, vector<char>, greater<char> > pq;
-//    for(auto it = plainText.begin();it!=plainText.end();++it){
-//        pq.push(*it);
-//    }
-//    set<char> s;
-//
-//    while(!pq.empty()){
-//        s.insert(pq.top());
-//        pq.pop();
-//    }
-//    string alpha;
-//    copy(s.begin(),s.end(),back_inserter(alpha));
-//    alpha_ = alpha;
-
-    //string encoding;
     encoding_->writeBits("header",id_,8);
     for(int i=0;i<plainText.length();i++){
         char c = plainText[i];

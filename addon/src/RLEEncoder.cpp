@@ -7,6 +7,73 @@ RLEEncoder::RLEEncoder(TextComponent * component):Decorator(component){
     format_.push_back("binary");
 }
 
+RLEEncoder::RLEEncoder(BITS bits):Decorator(bits){
+    id_ = RLE;
+    format_.push_back("binary");
+    
+    encoding_->add("header",Encoding::convertToBits(id_,8));
+    
+    //read padding
+    BITS plainCode;
+    BITS first(8);
+    copy(bits.begin(),bits.begin()+8,first.begin());
+    BYTE * padding = Encoding::convertToBinary(first);
+    
+    encoding_->add("paddingNum", first);
+    
+    bool curBit = bits[8];
+    encoding_->writeBits("sign", curBit, 1);
+    
+    auto it = bits.begin()+9;
+
+    int blockLength = 0;
+    BITS runLength;
+    int count = 0;
+    while(it!=bits.end()-*padding){
+
+        while(*it==0){
+            runLength.push_back(*it);
+            blockLength++;
+            it++;
+        }
+        int strLength = 0;
+
+        for(int i=0;i<blockLength+1;i++){
+            runLength.push_back(*it);
+            if(*it == 1){
+                int pow2 = 1;
+                for(int j=0;j<blockLength-i;j++){
+                    pow2 *= 2;
+                }
+                strLength+=pow2;
+            }
+            ++it;
+        }
+        stringstream ss;
+        ss << "rle";
+        if(count > 0) {
+          ss << (count + 1);
+        }
+        string key = ss.str();
+        encoding_->add(key, runLength);
+        BITS run;
+        for(int i=0;i<strLength;i++){
+            plainCode.push_back(curBit);
+            run.push_back(curBit);
+        }
+        runTable_.push_back(make_tuple(key, run, runLength));
+        curBit = !curBit;
+        blockLength = 0;
+        runLength.clear();
+        count++;
+    }
+    BITS paddingBits;
+    for (int i = 0 ; i < *padding; i++) {
+      paddingBits.push_back(0);
+    }
+    encoding_->add("padding", paddingBits);
+}
+
 RLEEncoder::~RLEEncoder(){}
 
 Encoding * RLEEncoder::encode(){

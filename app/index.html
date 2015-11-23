@@ -76,11 +76,11 @@
                 <div class="panel-heading heading-big">LZW Table</div>
                 <div class="row">
                   <div class="col-md-6">
-                    <encoding-table type="'output'" ng-model="response.encoding.table.output">
+                    <encoding-table filename="filename" type="'output'" ng-model="response.encoding.table.output">
                     </encoding-table>
                   </div>
                   <div class="col-md-6">
-                    <encoding-table type="'symbol'" ng-model="response.encoding.table.symbol">
+                    <encoding-table filename="filename" type="'symbol'" ng-model="response.encoding.table.symbol">
                     </encoding-table>
                   </div>
                 </div>
@@ -90,7 +90,7 @@
             <div ng-if="response.encoding.table && response.method=='RLE'"> 
               <div class="col-md-6 panel panel-default transparent" >
                 <div class="panel-heading heading-big">RLE Table</div>
-                <encoding-table type="'RLE'" ng-model="response.encoding.table"></encoding-table> 
+                <encoding-table filename="filename" type="'RLE'" ng-model="response.encoding.table"></encoding-table> 
               </div>    
             </div>
             

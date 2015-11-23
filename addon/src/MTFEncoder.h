@@ -8,6 +8,7 @@ class MTFEncoder : public Decorator
 {
     public:
         MTFEncoder(TextComponent*);
+        MTFEncoder(BITS);
         virtual ~MTFEncoder();
         virtual void print(std::ofstream&);
         Encoding * encode();

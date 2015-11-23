@@ -8,14 +8,10 @@ angular.module('Compression').factory('C9nAPI', ['$http', function($http) {
       return $http.post('api', request);
     },
     getTable: function(request) {
-      return $http.get('api/table', {
-        params: request
-      });
+      return $http.post('api/table', request);
     }, 
     getData: function(request) {
-      return $http.get('api/data', {
-        params: request
-      });
+      return $http.post('api/data', request);
     },
 
     save: function(request) {

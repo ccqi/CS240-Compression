@@ -7,6 +7,10 @@ Decorator::Decorator(TextComponent * component):component_(component){
     encoding_ = new Encoding();
 }
 
+Decorator::Decorator(BITS bits) {
+  encoding_ = new Encoding();
+}
+
 Decorator::~Decorator()
 {
     //delete component_;

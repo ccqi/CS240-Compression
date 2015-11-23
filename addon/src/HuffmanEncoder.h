@@ -17,6 +17,7 @@ class HuffmanEncoder : public Decorator
 {
     public:
         HuffmanEncoder(TextComponent*);
+        HuffmanEncoder(BITS);
         virtual ~HuffmanEncoder();
         Encoding * encode();
         virtual void print(std::ofstream&);

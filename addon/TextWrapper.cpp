@@ -36,6 +36,27 @@ TextComponent * TextWrapper::setDecorator(string type, TextComponent * text){
   }
 }
 
+TextComponent * TextWrapper::parseEncoding(string type, BITS bits){
+  if (type == "Huffman") {
+      return new HuffmanEncoder(bits);
+  }
+  else if (type == "BWT") {
+      return new BWTransform(bits);
+  }
+  else if (type == "RLE") {
+      return new RLEEncoder(bits);
+  }
+  else if (type == "MTF") {
+      return new MTFEncoder(bits);
+  }
+  else if (type == "LZW" || type =="symbol" || type == "output") {
+      return new LZWEncoder(bits);
+  }
+  else {
+      return NULL;
+  }
+}
+
 void TextWrapper::Init(v8Object exports) {
   Nan::HandleScope scope;
 
@@ -97,64 +118,29 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   // method
   v8::String::Utf8Value param3(args[2]->ToString());
   string type = string(*param3);
-
-  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  Encoding * pt = new Encoding(plainText, TEXT);
-  wrapper->setEncoding(pt);
-  wrapper->component_ = setDecorator(type, wrapper->component_);
   
-  // encode
-  Encoding * encoding = wrapper->component_->encode(); 
-  
-  // write to file
-  std::ofstream myFile;
-  myFile.open(filePath, ios::binary);
-  encoding->writeBinary(myFile);
-
-  args.GetReturnValue().Set(args.This());
-}
-
-void TextWrapper::Write(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-  
-  if (args.Length() < 1) {
-    Nan::ThrowTypeError("Wrong number of arguments");
-    return;
-  }
-  
-  // convert argument to string
-  v8::String::Utf8Value param1(args[0]->ToString());
-  string filePath = string(*param1);
-  // unwrap the object
-  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  TextComponent * component = wrapper->component_;
-  Encoding * encoding = component->getEncoding();
-
-  std::ofstream myFile;
-  myFile.open(filePath, ios::binary);
-  encoding->writeBinary(myFile);
-  
-  args.GetReturnValue().Set(args.This());
-}
-
-void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-   
-  // unwrap the object
-  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  TextComponent * component = wrapper->component_;
-  Encoding * encoding = component->getEncoding();
-  
-  // convert argument to string
-  v8::String::Utf8Value param1(args[0]->ToString());
-  string type = string(*param1);
-
   // get max values from config
-  v8Object arg1  = args[1]->ToObject();
+  v8Object arg1  = args[2]->ToObject();
   int maxData = arg1->Get(Nan::New("data").ToLocalChecked())->Int32Value();
   maxData = (maxData == 0) ? 50: maxData;
   int maxTree = arg1->Get(Nan::New("tree").ToLocalChecked())->Int32Value();
   maxTree = (maxTree == 0) ? 3: maxTree;
   int maxTable = arg1->Get(Nan::New("table").ToLocalChecked())->Int32Value();
   maxTable = (maxTable == 0) ? 50: maxTable;
+
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
+  Encoding * pt = new Encoding(plainText, TEXT);
+  wrapper->setEncoding(pt);
+  wrapper->component_ = setDecorator(type, wrapper->component_);
+  TextComponent * component = wrapper->component_; 
+  
+  // encode
+  Encoding * encoding = wrapper->component_->encode();  
+  // write to file
+  std::ofstream myFile;
+  myFile.open(filePath, ios::binary);
+  encoding->writeBinary(myFile);
+  
   // convert result to json
   v8Object result = Nan::New<v8::Object>();
   vector<string> format = component->getFormat();
@@ -192,19 +178,67 @@ void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(result);
 }
 
-void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+void TextWrapper::Write(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  
+  if (args.Length() < 1) {
+    Nan::ThrowTypeError("Wrong number of arguments");
+    return;
+  }
+  
+  // convert argument to string
+  v8::String::Utf8Value param1(args[0]->ToString());
+  string filePath = string(*param1);
   // unwrap the object
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
   TextComponent * component = wrapper->component_;
   Encoding * encoding = component->getEncoding();
+
+  std::ofstream myFile;
+  myFile.open(filePath, ios::binary);
+  encoding->writeBinary(myFile);
+  
+  args.GetReturnValue().Set(args.This());
+}
+
+void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+    
+  // convert argument to string
+  //v8::String::Utf8Value param1(args[0]->ToString());
+  //string filename = string(*param1);
+  
+  //v8::String::Utf8Value param2(args[1]->ToString());
+  //string type = string(*param2);
+}
+
+void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  
   // convert argument to string
   v8::String::Utf8Value param1(args[0]->ToString());
-  string type = string(*param1); 
-  int start  = args[1]->Int32Value();
-  int increment  = args[2]->Int32Value();
+  string filename = string(*param1);
+  v8::String::Utf8Value param2(args[1]->ToString());
+  string type = string(*param2);
+  // get max value
+  int start  = args[2]->Int32Value();
+  int increment  = args[3]->Int32Value();
   if (increment == 0) {
     increment = 50;
   }
+  
+  // parse encoding from file
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder()); 
+  ifstream file(filename, ios::binary);
+  BITS whole_data;
+  char buffer;
+  while (file.read(&buffer,1)){
+    int byte = (unsigned char)buffer;
+    for (int i = 0; i < 8; i++){
+      whole_data.push_back(((byte >> i) & 1) != 0);
+    }
+  }
+  TextComponent * component = parseEncoding(type, std::vector<bool>(whole_data.begin()+8, whole_data.end()));
+  Encoding * encoding = component->getEncoding();
+ 
+  // make json object
   v8Object result = Nan::New<v8::Object>();  
   result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, start, increment));
   double percent = (double)(start + increment)  / encoding->size();
@@ -215,22 +249,37 @@ void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void TextWrapper::GetTable(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-  // unwrap the object
-  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  TextComponent * component = wrapper->component_;
-  Encoding * encoding = component->getEncoding();
+  
    
   // convert argument to string
   v8::String::Utf8Value param1(args[0]->ToString());
-  string type = string(*param1);
-  
-  int start  = args[1]->Int32Value();
-  int increment  = args[2]->Int32Value();
+  string filename = string(*param1);
+
+  v8::String::Utf8Value param2(args[1]->ToString());
+  string type = string(*param2);
+
+  int start  = args[2]->Int32Value();
+  int increment  = args[3]->Int32Value();
   if (increment == 0) {
     increment = 50;
   }
+  
+  // parse encoding from file
+  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder()); 
+  ifstream file(filename, ios::binary);
+  BITS whole_data;
+  char buffer;
+  while (file.read(&buffer,1)){
+    int byte = (unsigned char)buffer;
+    for (int i = 0; i < 8; i++){
+      whole_data.push_back(((byte >> i) & 1) != 0);
+    }
+  }
+  TextComponent * component = parseEncoding(type, std::vector<bool>(whole_data.begin()+8, whole_data.end()));
+  Encoding * encoding = component->getEncoding();
 
   v8Object result;
+  
   if (type == "symbol") {
     map<int, string> symbolTable = reinterpret_cast<LZWEncoder*>(component)->getTable();
     result = formatSymbolTable(symbolTable, start + 128, increment);

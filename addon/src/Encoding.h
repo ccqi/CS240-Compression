@@ -61,6 +61,7 @@ class Encoding
         void writeBits(int, int);
         void writeBits(std::string, int, int);
         int readBits(int);
+        BITS readBinaryBits(int);
         void writeBinary(std::ofstream&);
         void add(const BITS& b);
         void add(std::string, const BITS& b);

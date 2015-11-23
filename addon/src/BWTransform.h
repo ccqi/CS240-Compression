@@ -9,9 +9,11 @@ class BWTransform : public Decorator
 {
     public:
         BWTransform(TextComponent*);
+        BWTransform(BITS bits);
         virtual ~BWTransform();
         Encoding * encode();
         void print(std::ofstream&);
+        Encoding * parseData();
     private:
         Encoding * getDecode(Encoding*);
 

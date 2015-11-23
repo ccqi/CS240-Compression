@@ -96,6 +96,7 @@ angular.module('Compression').controller('MainCtrl',
         return;
       }
       C9nAPI.getData({
+        'filename': $scope.filename,
         'type': $scope.method,
         'start': $scope.start,
         'increment': config.max.data
@@ -125,37 +126,36 @@ angular.module('Compression').controller('MainCtrl',
     $scope.submit = function() {
       var request = {
         'method': $scope.method,
-        'data': $scope.data
+        'data': $scope.data,
+        'max': config.max
       };
       C9nAPI.encode(request).then(
         function(response) {
-          $scope.filename = response.data;
-          var params = {
-            'type': $scope.method,
-            'max': config.max
-          };
-          C9nAPI.get(params).then(
-            function(response) {
-              console.log('got data');
-              $scope.response = response.data;         
-              if ($scope.response.encoding.data) {
-                $scope.info = processOutput($scope.response.encoding.data);
-              }
-              $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
-              $scope.start = parseInt(config.max.data);
-              if ($scope.response.encoding.huffmanTrie) {
-                $scope.huffmanTree = {
-                  'key': 'root',
-                  'percent': $scope.response.encoding.treePercentage,
-                  'value': $scope.response.encoding.huffmanTrie
-                };
-              }
-              else {
-                $scope.huffmanTree = undefined;
-              }
-              $scope.submitted = true;
-            }
-          )
+          console.log('compression success');
+          $scope.response = response.data;         
+          $scope.filename = $scope.response.filename;
+          if ($scope.response.encoding.data) {
+            $scope.info = processOutput($scope.response.encoding.data);
+          }
+          $scope.ratio = parseFloat($scope.response.encoding.compression_ratio).toFixed(2);
+          $scope.start = parseInt(config.max.data);
+          if ($scope.start >= config.absoluteMax.data) {
+            $scope.MORE.DATA = 'To see more, download the entire encoding...';
+          }
+          else {
+            $scope.MORE.DATA = 'See more...'
+          }
+          if ($scope.response.encoding.huffmanTrie) {
+            $scope.huffmanTree = {
+              'key': 'root',
+              'percent': $scope.response.encoding.treePercentage,
+              'value': $scope.response.encoding.huffmanTrie
+            };
+          }
+          else {
+            $scope.huffmanTree = undefined;
+          }
+          $scope.submitted = true;
         },
         function(error) {
           console.log('compression failed ');

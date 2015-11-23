@@ -6,9 +6,79 @@ LZWEncoder::LZWEncoder(TextComponent * component_):Decorator(component_){
     id_ = LZW;
     format_.push_back("binary");
 }
+LZWEncoder::LZWEncoder(BITS bits):Decorator(bits){
+    id_ = LZW;
+    format_.push_back("binary");
+    
+    encoding_->writeBits("header", id_, 8);
+    //table of ASCII values 0-127
+    vector<string> table;
+    for(int i=0;i<128;i++){
+        stringstream ss;
+        ss<<(char)i;
+        table.push_back(ss.str());
+    }
+
+    string plainText;
+    //auto it = cipherCode.begin();
+    Encoding * encoding = new Encoding(bits);
+    int prev_code = encoding->readBits(Encoding::getBinarySize(table.size()-1));
+    int binary_size = Encoding::getBinarySize(table.size() - 1);
+    BITS bin_code = Encoding::convertToBits(prev_code, binary_size);
+    encoding_->add("lzw", bin_code);
+    output_.push_back(make_tuple("lzw", prev_code, bin_code));
+    
+    int first_code = prev_code;
+    plainText+=table[prev_code];
+    int cur_code;
+    int i = 1;
+    while(cur_code = encoding->readBits(Encoding::getBinarySize(table.size()))){
+        stringstream stream;
+        stream << "lzw" << "_" << (i + 1);
+        int binary_size = Encoding::getBinarySize(table.size());
+        BITS bin_code = Encoding::convertToBits(cur_code, binary_size);
+        encoding_->add(stream.str(), bin_code);
+        output_.push_back(make_tuple(stream.str(), cur_code, bin_code));
+        
+        string decode;
+        if(cur_code>=table.size()){
+            decode = table[prev_code];
+            decode += first_code;
+        }
+        else{
+            decode = table[cur_code];
+        }
+        plainText+=decode;
+        first_code = decode[0];
+        stringstream ss;
+        ss<<table[prev_code]<<table[first_code];
+        table.push_back(ss.str());
+        prev_code = cur_code;
+        i++;
+    }
+    binary_size = Encoding::getBinarySize(table.size());
+    bin_code = Encoding::convertToBits(cur_code, binary_size);
+    encoding_->add("stop", bin_code);
+    output_.push_back(make_tuple("stop",cur_code, bin_code));
+    
+    int padding = bits.size() - (encoding_->getBits().size() - 8);
+    BITS paddingBits;
+    for (int i = 0 ; i < padding; i++) {
+      paddingBits.push_back(0);
+    }
+    if (paddingBits.size() > 0) {
+      encoding_->add("padding", paddingBits);
+    }
+
+    //make symbol table
+    for (int i=0 ; i<table.size(); i++) {
+      table_[table[i]] = i;
+    }
+}
 
 LZWEncoder::~LZWEncoder(){
 }
+
 Encoding * LZWEncoder::encode(){
 
     originalEncoding_ = Decorator::encode();

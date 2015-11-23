@@ -8,6 +8,65 @@ HuffmanEncoder::HuffmanEncoder(TextComponent * component):Decorator(component){
     format_.push_back("binary");
 }
 
+HuffmanEncoder::HuffmanEncoder(BITS bits):Decorator(bits){
+    id_ = HUFFMAN;
+    depth_ = 0;
+    format_.push_back("binary");
+    
+    encoding_->writeBits("header",id_,8);
+
+    //read padding
+    BITS first(8);
+    copy(bits.begin(),bits.begin()+8,first.begin());
+    BYTE * padding = Encoding::convertToBinary(first);
+    encoding_->add("paddingNum", first);
+    //read tree
+    auto it = bits.begin()+8;
+    auto tree_start = it;
+    Trie * head = readTrie(it);
+    huffmanTrie_ = head;
+    Trie * tree_iter = head;
+    
+    //decrpyt
+    ++it;
+    
+    BITS tree_bits = vector<bool>(tree_start, it);
+    encoding_->add("huffmanTree", tree_bits);
+    
+    BITS output;
+    int i = 0;
+    for(;it!=bits.end()-*padding;++it){
+        if(tree_iter==NULL){
+            output.clear();
+            continue;
+        }
+        if(*it){
+            tree_iter = tree_iter->one;
+            output.push_back(1);
+        }
+        else{
+            tree_iter = tree_iter->zero;
+            output.push_back(0);
+        }
+        if(tree_iter->isLeaf){
+            stringstream key;
+            key << "huffman";
+            if (i > 0) {
+              key << "_" << (i + 1);
+            }
+            encoding_->add(key.str(), output);
+            tree_iter = head;
+            output.clear();
+            i++;
+        }
+    }
+    BITS paddingBits;
+    for (int i = 0 ; i < *padding; i++) {
+      paddingBits.push_back(0);
+    }
+    encoding_->add("padding", paddingBits);
+}
+
 HuffmanEncoder::~HuffmanEncoder(){}
 
 

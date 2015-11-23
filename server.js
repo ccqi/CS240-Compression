@@ -55,52 +55,39 @@ app.post('/api/encode', function(req, res) {
       var timestamp = Math.floor(new Date() / 1000);     
       var filename = name + '_' + timestamp + '.' + extension;
       var path = dir + '/' + filename;
-      encoder.encode(path, req.body.data, req.body.method);
+      var encoding = encoder.encode(path, req.body.data, req.body.method, req.body.max);
       console.log('New file: ' + filename + ' saved');
       res.setHeader('Content-Type', 'text/plain');
-      res.send(filename);
+      res.send({
+        'method': req.body.method,
+        'filename': filename,
+        'encoding': encoding
+      });
     }
   });
 });
 
-app.post('/api', function(req, res) {
-  var encoding = encoder.get(req.body.type, req.body.max);
+/*app.post('/api', function(req, res) {
+  var path = 'app/files/' + req.body.filename;
+  var encoding = encoder.get(path, req.body.type, req.body.max);
   res.setHeader('Content-Type', 'application/json');
   res.send({
     'method': req.body.type,
     'encoding': encoding
   });
-});
+});*/
 
-app.post('/api/save', function(req, res) {
-  var dir = 'app/files';
-  var name = 'output';
-  var extension = 'bin';
-  //make directory if it doesn't already exist
-  mkdirp(dir, function(err) {
-    if (err) {
-      console.error(err);
-    } else {
-      var timestamp = Math.floor(new Date() / 1000);     
-      var filename = name + '_' + timestamp + '.' + extension;
-      var path = dir + '/' + filename;
-      encoder.write(path);
-      console.log('New file: ' + filename + ' saved');
-      res.setHeader('Content-Type', 'text/plain');
-      res.send(filename);
-    }
-  });
-  
-});
 
-app.get('/api/table', function(req, res) {
-  var table = encoder.getTable(req.query.type, req.query.start, req.query.increment)
+app.post('/api/table', function(req, res) {
+  var path = 'app/files/' + req.body.filename;
+  var table = encoder.getTable(path, req.body.type, req.body.start, req.body.increment)
   res.setHeader('Content-Type', 'application/json');
   res.send(table);
 });
 
-app.get('/api/data', function(req, res) {
-  var data = encoder.getData(req.query.type, req.query.start, req.query.max);
+app.post('/api/data', function(req, res) {
+  var path = 'app/files/' + req.body.filename;
+  var data = encoder.getData(path, req.body.type, req.body.start, req.body.increment);
   res.setHeader('Content-Type', 'application/json');
   res.send(data);
 });
