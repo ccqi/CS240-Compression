@@ -39,11 +39,11 @@ var purgeFiles = new CronJob('00 30 02 * * *',
   true
 );
 
-var encoder = new addon.TextWrapper();
 
 app.post('/api/encode', function(req, res) {
 
   // save encoding to file
+  var encoder = new addon.TextWrapper();
   var dir = 'app/files';
   var name = 'output';
   var extension = 'bin';
@@ -67,18 +67,8 @@ app.post('/api/encode', function(req, res) {
   });
 });
 
-/*app.post('/api', function(req, res) {
-  var path = 'app/files/' + req.body.filename;
-  var encoding = encoder.get(path, req.body.type, req.body.max);
-  res.setHeader('Content-Type', 'application/json');
-  res.send({
-    'method': req.body.type,
-    'encoding': encoding
-  });
-});*/
-
-
 app.post('/api/table', function(req, res) {
+  var encoder = new addon.TextWrapper();
   var path = 'app/files/' + req.body.filename;
   var table = encoder.getTable(path, req.body.type, req.body.start, req.body.increment)
   res.setHeader('Content-Type', 'application/json');
@@ -86,6 +76,7 @@ app.post('/api/table', function(req, res) {
 });
 
 app.post('/api/data', function(req, res) {
+  var encoder = new addon.TextWrapper();
   var path = 'app/files/' + req.body.filename;
   var data = encoder.getData(path, req.body.type, req.body.start, req.body.increment);
   res.setHeader('Content-Type', 'application/json');

@@ -50,10 +50,7 @@ RLEEncoder::RLEEncoder(BITS bits):Decorator(bits){
             ++it;
         }
         stringstream ss;
-        ss << "rle";
-        if(count > 0) {
-          ss << (count + 1);
-        }
+        ss << "rle_" << (count + 1);
         string key = ss.str();
         encoding_->add(key, runLength);
         BITS run;
@@ -118,10 +115,7 @@ Encoding * RLEEncoder::encode(){
                 binLength.pop_back();
             }
             stringstream ss;
-            ss << "rle";
-            if(count > 0) {
-              ss << (count + 1);
-            }
+            ss << "rle_" << (count + 1);
             string key = ss.str();
             encoding_->add(key, runLength);
             runTable_.push_back(make_tuple(key, run,runLength));

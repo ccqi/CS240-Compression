@@ -14,6 +14,10 @@
   color: purple;
 }
 
+.well {
+  margin-bottom: 15px;
+}
+
 .btn-more {
   width: 100%;
   border: None;
