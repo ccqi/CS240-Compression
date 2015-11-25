@@ -60,12 +60,12 @@ button:focus {
   margin-bottom: 0px;
 }
 .data {
-  max-height: 350px;
+  max-height: 315px;
   overflow-y: auto;
 }
 .table-content {
   cursor: pointer;
-  height: 350px;
+  height: 315px;
   overflow-y: scroll;
 }
 

@@ -2,12 +2,15 @@
 
 angular.module('Compression').controller('MainCtrl',
   ['$scope',
+  '$q',
   'C9nAPI',
   '$compile',
   'Highlight',
   'config',
-  function($scope, C9nAPI, $compile, Highlight, config) {
+  'Upload',
+  function($scope, $q, C9nAPI, $compile, Highlight, config, Upload) {
     $scope.submitted = false;
+    $scope.fileChanged = false;
     $scope.method = 'BWT';
     $scope.methods = [
       'BWT',
@@ -56,7 +59,7 @@ angular.module('Compression').controller('MainCtrl',
         }
       )  
     }
-
+    
     self.processOutput = function(output) {
       var textLen = 0;
       var info = {};
@@ -75,6 +78,7 @@ angular.module('Compression').controller('MainCtrl',
       output.textLength = textLen;
       return output;
     }
+
     self.processEntry = function(entry) {
       var len = $scope.info.textLength;
       var binary = '';
@@ -89,6 +93,11 @@ angular.module('Compression').controller('MainCtrl',
       $scope.info.textLength = len;
       entry.binary = binary;
       return entry;
+    };
+
+    $scope.newUpload = function($file) {
+      $scope.file = $file;
+      $scope.fileChanged = true;
     };
 
     $scope.expand = function() {
@@ -120,15 +129,25 @@ angular.module('Compression').controller('MainCtrl',
       );
 
     };
+
     $scope.blur = function() {
       $('.btn').blur();
-    }
-    $scope.submit = function() {
-      var request = {
-        'method': $scope.method,
-        'data': $scope.data,
-        'max': config.max
-      };
+    };
+
+    $scope.upload = function (file) {
+      var deferred = $q.defer();
+      Upload.upload({
+          url: 'api/upload',
+          file: file
+      }).then(function (resp) {
+          deferred.resolve(resp.data.filename);
+      }, function (resp) {
+          deferred.reject('error');
+      });
+      return deferred.promise;
+    };
+    
+    $scope.encode = function(request) {
       C9nAPI.encode(request).then(
         function(response) {
           console.log('compression success');
@@ -161,7 +180,46 @@ angular.module('Compression').controller('MainCtrl',
           console.log('compression failed ');
         }
       );
+    };
 
+    $scope.submit = function(file) {
+      var request = {
+        'method': $scope.method,
+        'max': config.max
+      };
+
+      if ($scope.showFile) {
+        if ($scope.file) {
+          if ($scope.fileChanged) {
+            $scope.upload($scope.file).then(
+              function(res) {
+                console.log('successfully saved file');
+                request.inputType = 'FILE';
+                $scope.fileRef = res;
+                request.content = res;
+                $scope.encode(request);
+                $scope.fileChanged = false;
+              },
+              function(err) {
+                console.error(err);
+              }
+            );
+          } else {
+            request.inputType = 'FILE';
+            request.content = $scope.fileRef;
+            $scope.encode(request);
+          }
+        }
+        else {
+          console.error('You need to upload a file');
+          return;
+        }
+      }
+      else {
+        request.inputType = 'TEXT';
+        request.content = $scope.data;
+        $scope.encode(request);
+      }
     };
 }]);
 

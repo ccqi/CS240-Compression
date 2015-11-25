@@ -14,6 +14,8 @@
     <script src="scripts/directives/data.js"></script>
     <script src="scripts/directives/tree.js"></script>
     <script src="scripts/directives/table.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/10.0.2/ng-file-upload.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/10.0.2/ng-file-upload-shim.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="styles/css" href="styles/styles.css">
@@ -27,19 +29,44 @@
     <div class = "input-panel well well-small">
       <form ng-submit="submit()" role="form" class="form-default">
         <div class="form-group">
-          <textarea ng-model="data" ng-change="dataChanged()" rows="4" cols="50" name ="message" id="plainText" class="form-control" placeholder="Enter text you want to encode..."></textarea>
+        <label class="radio-inline">
+          <input 
+            type="radio"
+            ng-model="showFile" 
+            ng-value="false" 
+            ng-checked="true"
+          > Text
+          </input>
+        </label>
+        <label class="radio-inline">
+          <input 
+            type="radio"
+            ng-model="showFile"
+            ng-value="true"
+          > File
+          </input>
+        </label>
+      </div>
+        <div class="form-group" ng-if="!showFile">
+          <textarea ng-model="$parent.data" ng-change="$parent.dataChanged()" rows="4" cols="50" name ="message" id="plainText" class="form-control" placeholder="Enter text you want to encode..."></textarea>
         </div>
-        <label>Compression Method:</label>
+         
+        <div class = "form-group" ng-if="showFile">
+          <button class="btn btn-default" ngf-select ngf-change="newUpload($file)" ngf-max-size="50KB" name="file" ngf-multiple="false">Select File</button>
+        </div>
+        
         <div class="float-right">
           <label ng-if="data">Input Size (Bits):</label>
           <p class="inline">{{size}}</p>
         </div>
+        <label>Compression Method:</label>
         <div class="form-group">
           <label ng-repeat="method in methods" class="radio-inline">
             <input type="radio" ng-model="$parent.method" ng-value="method"></input>
             {{method}}
           </label>
         </div>
+        
         <button type = "submit" value="Encode" class="btn btn-primary">Encode</button>
       </form>
     </div>

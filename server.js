@@ -3,6 +3,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var addon = require('./addon/build/Release/compression.node');
 var mkdirp = require('mkdirp');
+var multer = require('multer');
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -10,6 +11,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 
 app.use(express.static(__dirname + '/app'));
+app.use(express.static(__dirname + '/node_modules'));
 
 app.get('/', function (req, res) {
   res.sendFile('app/index.html',{root:__dirname});
@@ -47,6 +49,7 @@ app.post('/api/encode', function(req, res) {
   var dir = 'app/files';
   var name = 'output';
   var extension = 'bin';
+
   //make directory if it doesn't already exist
   mkdirp(dir, function(err) {
     if (err) {
@@ -54,8 +57,13 @@ app.post('/api/encode', function(req, res) {
     } else {
       var timestamp = Math.floor(new Date() / 1000);     
       var filename = name + '_' + timestamp + '.' + extension;
-      var path = dir + '/' + filename;
-      var encoding = encoder.encode(path, req.body.data, req.body.method, req.body.max);
+      var outputPath = dir + '/' + filename;
+      if (req.body.inputType != 'TEXT' && req.body.inputType != 'FILE')  {
+        res.status(400).send('Input type not specified');
+        return;
+      }
+
+      var encoding = encoder.encode(outputPath, req.body.method, req.body.max, req.body.inputType, req.body.content);
       console.log('New file: ' + filename + ' saved');
       res.setHeader('Content-Type', 'text/plain');
       res.send({
@@ -82,3 +90,14 @@ app.post('/api/data', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.send(data);
 });
+
+var upload = multer({dest: 'uploads/'});
+
+app.post('/api/upload', upload.single('file'), function(req, res) {
+  console.log('Uploaded new file: ' +  req.file.originalname);
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send({'filename': req.file.filename});
+});
+
+
+

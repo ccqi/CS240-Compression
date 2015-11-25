@@ -111,13 +111,9 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   v8::String::Utf8Value param1(args[0]->ToString());
   string filePath = string(*param1);
   
-  // data
-  v8::String::Utf8Value param2(args[1]->ToString());
-  std::string plainText = std::string(*param2);
-  
   // method
-  v8::String::Utf8Value param3(args[2]->ToString());
-  string type = string(*param3);
+  v8::String::Utf8Value param2(args[1]->ToString());
+  string type = string(*param2);
   
   // get max values from config
   v8Object arg1  = args[2]->ToObject();
@@ -127,13 +123,40 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   maxTree = (maxTree == 0) ? 3: maxTree;
   int maxTable = arg1->Get(Nan::New("table").ToLocalChecked())->Int32Value();
   maxTable = (maxTable == 0) ? 50: maxTable;
+  
 
+  // input type
+  v8::String::Utf8Value param4(args[3]->ToString());
+  std::string inputType = std::string(*param4);
+  
+  // content
+  v8::String::Utf8Value param5(args[4]->ToString());
+  std::string content = std::string(*param5);
+  
   TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  Encoding * pt = new Encoding(plainText, TEXT);
+  Encoding * pt;
+  
+  if (inputType == "TEXT") {
+    pt = new Encoding(content, TEXT);
+  } else {
+    stringstream path;
+    path << "uploads/" << content;
+    ifstream file(path.str(), ios::binary);
+    BITS whole_data;
+    char buffer;
+    while (file.read(&buffer,1)){
+      int byte = (unsigned char)buffer;
+      for (int i = 0; i < 8; i++){
+        whole_data.push_back(((byte >> i) & 1) != 0);
+      }
+    }
+    pt = new Encoding(whole_data); 
+  }
+  
   wrapper->setEncoding(pt);
   wrapper->component_ = setDecorator(type, wrapper->component_);
   TextComponent * component = wrapper->component_; 
-  
+   
   // encode
   Encoding * encoding = wrapper->component_->encode();  
   // write to file
