@@ -26,8 +26,9 @@ angular.module('Compression').controller('MainCtrl',
       'RLE': 'col-md-6',
       'Huffman': 'col-md-5'
     };
-
+    $scope.config = config;
     $scope.highlight = Highlight;
+    $scope.notAscii = false;
     $scope.dataChanged = function() {
       if ($scope.data) {
         $scope.size = $scope.data.length * 8;
@@ -175,6 +176,7 @@ angular.module('Compression').controller('MainCtrl',
       C9nAPI.encode(request).then(
         function(response) {
           console.log('compression success');
+          $scope.notAscii = false;
           $scope.response = response.data;         
           $scope.filename = $scope.response.filename;
           if ($scope.response.encoding.data) {
@@ -202,6 +204,11 @@ angular.module('Compression').controller('MainCtrl',
         },
         function(error) {
           console.log('compression failed ');
+          if (error.status == 4001) {
+            $scope.notAscii = true;
+          } else {
+            $scope.notAscii = false;
+          }
         }
       );
     };

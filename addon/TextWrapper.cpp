@@ -68,7 +68,6 @@ void TextWrapper::Init(v8Object exports) {
   // Prototype
   Nan::SetPrototypeMethod(tpl, "encode", Encode);
   Nan::SetPrototypeMethod(tpl, "decode", Decode);
-  Nan::SetPrototypeMethod(tpl, "get", Get);
   Nan::SetPrototypeMethod(tpl, "getData", GetData);
   Nan::SetPrototypeMethod(tpl, "getTable", GetTable);
 
@@ -137,6 +136,16 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   Encoding * pt;
   
   if (inputType == "TEXT") {
+    if (type == "LZW") {
+      for (int i = 0; i < content.size(); i++) {
+        char byte = (char)content[i];
+        if (byte > 127 || byte < 0) {
+          string msg = "We cannot encode this file since it contains non ascii characters";
+          Nan::ThrowError(Nan::New(msg).ToLocalChecked());
+          return;
+        }
+      }
+    }
     pt = new Encoding(content, TEXT);
   } else {
     ifstream file(content, ios::binary);
@@ -144,6 +153,11 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
     char buffer;
     while (file.read(&buffer,1)){
       int byte = (unsigned char)buffer;
+      if (byte > 127 && type == "LZW") {
+        string msg = "We cannot encode this file since it contains non ascii characters";
+        Nan::ThrowError(Nan::New(msg).ToLocalChecked());
+        return;
+      }
       for (int i = 0; i < 8; i++){
         whole_data.push_back(((byte >> i) & 1) != 0);
       }
@@ -220,6 +234,7 @@ void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   char buffer;
   while (file.read(&buffer,1)){
     int byte = (unsigned char)buffer;
+    
     for (int i = 0; i < 8; i++){
       whole_data.push_back(((byte >> i) & 1) != 0);
     }

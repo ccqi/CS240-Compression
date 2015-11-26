@@ -73,14 +73,20 @@ app.post('/api/encode', function(req, res) {
       if (req.body.inputType == 'FILE') {
         content =  config.uploadPath + '/' + req.body.content; 
       }
-      var encoding = encoder.encode(outputPath, req.body.method, req.body.max, req.body.inputType, content);
-      console.log('New file: ' + hash + ' saved');
-      res.setHeader('Content-Type', 'text/plain');
-      res.send({
-        'method': req.body.method,
-        'filename': hash,
-        'encoding': encoding
-      });
+      try {
+        var encoding = encoder.encode(outputPath, req.body.method, req.body.max, req.body.inputType, content);
+        console.log('New file: ' + hash + ' saved');
+        res.setHeader('Content-Type', 'text/plain');
+        res.send({
+          'method': req.body.method,
+          'filename': hash,
+          'encoding': encoding
+        });
+      } catch(err) {
+        console.log(err); 
+        res.setHeader('Content-Type', 'text/plain');
+        res.status(4001).send("The file is not ascii");
+      }
     }
   });
 });

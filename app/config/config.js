@@ -17,5 +17,6 @@ angular.module('Compression')
     'paddingNum': 'Length of padding',
     'padding': 'Padding',
     'huffmanTree': 'Huffman tree'
-  }
+  },
+  'nonAscii': 'You currently cannot encode in LZW with non-ascii characters' 
 });

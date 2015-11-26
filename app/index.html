@@ -96,6 +96,7 @@
         </div>
         
         <button type = "submit" value="Encode" class="btn btn-primary">Encode</button>
+        <label class="error" ng-if="notAscii">{{config.nonAscii}}</label>
       </form>
     </div>
     

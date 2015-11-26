@@ -20,7 +20,6 @@ LZWEncoder::LZWEncoder(BITS bits):Decorator(bits){
     }
 
     string plainText;
-    //auto it = cipherCode.begin();
     Encoding * encoding = new Encoding(bits);
     int prev_code = encoding->readBits(Encoding::getBinarySize(table.size()-1));
     int binary_size = Encoding::getBinarySize(table.size() - 1);
