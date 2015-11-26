@@ -29,7 +29,12 @@ angular.module('Compression').controller('MainCtrl',
 
     $scope.highlight = Highlight;
     $scope.dataChanged = function() {
-      $scope.size = $scope.data.length * 4;
+      if ($scope.data) {
+        $scope.size = $scope.data.length * 8;
+      }
+      else {
+        $scope.size = 0;
+      }
     }
     $scope.MORE = {
       'DATA': 'See more...',
@@ -60,6 +65,16 @@ angular.module('Compression').controller('MainCtrl',
       )  
     }
     
+    $scope.fileError = function() {
+      console.log("File",form.file.$error);
+      if ($scope.file && form.file.$error) {
+        console.log("Error", form.file.$error);
+        return true; 
+      }
+      return false;
+    };
+
+
     self.processOutput = function(output) {
       var textLen = 0;
       var info = {};
@@ -97,8 +112,17 @@ angular.module('Compression').controller('MainCtrl',
 
     $scope.newUpload = function($file) {
       $scope.file = $file;
-      $scope.fileChanged = true;
+      if ($scope.file) {
+        $scope.size = $scope.file.size * 8;
+        $scope.fileChanged = true;
+      }
     };
+
+    $scope.initFiles = function($file) {
+      if ($scope.file) {
+        $scope.size = $scope.file.size * 8;
+      }
+    }
 
     $scope.expand = function() {
       if ($scope.start >= config.absoluteMax.data) {

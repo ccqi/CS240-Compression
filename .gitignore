@@ -33,5 +33,6 @@ node_modules
 *.d
 
 #Temp files
-app/files
 uploads
+tmp
+app/files

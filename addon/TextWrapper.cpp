@@ -139,9 +139,7 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   if (inputType == "TEXT") {
     pt = new Encoding(content, TEXT);
   } else {
-    stringstream path;
-    path << "uploads/" << content;
-    ifstream file(path.str(), ios::binary);
+    ifstream file(content, ios::binary);
     BITS whole_data;
     char buffer;
     while (file.read(&buffer,1)){
@@ -201,38 +199,6 @@ void TextWrapper::Encode(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(result);
 }
 
-void TextWrapper::Write(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-  
-  if (args.Length() < 1) {
-    Nan::ThrowTypeError("Wrong number of arguments");
-    return;
-  }
-  
-  // convert argument to string
-  v8::String::Utf8Value param1(args[0]->ToString());
-  string filePath = string(*param1);
-  // unwrap the object
-  TextWrapper * wrapper = ObjectWrap::Unwrap<TextWrapper>(args.Holder());
-  TextComponent * component = wrapper->component_;
-  Encoding * encoding = component->getEncoding();
-
-  std::ofstream myFile;
-  myFile.open(filePath, ios::binary);
-  encoding->writeBinary(myFile);
-  
-  args.GetReturnValue().Set(args.This());
-}
-
-void TextWrapper::Get(const Nan::FunctionCallbackInfo<v8::Value>& args) {
-    
-  // convert argument to string
-  //v8::String::Utf8Value param1(args[0]->ToString());
-  //string filename = string(*param1);
-  
-  //v8::String::Utf8Value param2(args[1]->ToString());
-  //string type = string(*param2);
-}
-
 void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   
   // convert argument to string
@@ -260,7 +226,6 @@ void TextWrapper::GetData(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   }
   TextComponent * component = parseEncoding(type, std::vector<bool>(whole_data.begin()+8, whole_data.end()));
   Encoding * encoding = component->getEncoding();
- 
   // make json object
   v8Object result = Nan::New<v8::Object>();  
   result->Set(Nan::New("data").ToLocalChecked(), formatData(type, encoding, component, start, increment));

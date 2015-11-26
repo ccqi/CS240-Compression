@@ -1,5 +1,5 @@
 MVI 1
-1. Upload files - 2
+1. Fix LZW ascii issue - 2
 2. Host on AWS - 1
 3. Documentation - 2
 

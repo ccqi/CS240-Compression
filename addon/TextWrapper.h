@@ -33,10 +33,8 @@ class TextWrapper : public Nan::ObjectWrap {
 
   static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
   static void Set(const Nan::FunctionCallbackInfo<v8::Value>& info); 
-  static void Get(const Nan::FunctionCallbackInfo<v8::Value>& args); 
   static void GetTable(const Nan::FunctionCallbackInfo<v8::Value>& args); 
   static void GetData(const Nan::FunctionCallbackInfo<v8::Value>& args); 
-  static void Write(const Nan::FunctionCallbackInfo<v8::Value>& args); 
   static void Encode(const Nan::FunctionCallbackInfo<v8::Value>& args); 
   static void Decode(const Nan::FunctionCallbackInfo<v8::Value>& args);
   static Nan::Persistent<v8::Function> constructor;

@@ -27,36 +27,64 @@
     <h5><b>INPUT</b></h5>
     
     <div class = "input-panel well well-small">
-      <form ng-submit="submit()" role="form" class="form-default">
+      <form ng-submit="submit()" role="form" name="form" class="form-default">
         <div class="form-group">
-        <label class="radio-inline">
-          <input 
-            type="radio"
-            ng-model="showFile" 
-            ng-value="false" 
-            ng-checked="true"
-          > Text
-          </input>
-        </label>
-        <label class="radio-inline">
-          <input 
-            type="radio"
-            ng-model="showFile"
-            ng-value="true"
-          > File
-          </input>
-        </label>
-      </div>
-        <div class="form-group" ng-if="!showFile">
+          <label class="radio-inline">
+            <input 
+              type="radio"
+              ng-model="showFile" 
+              ng-value="false" 
+              ng-checked="true"
+            > Text
+            </input>
+          </label>
+          <label class="radio-inline">
+            <input 
+              type="radio"
+              ng-model="showFile"
+              ng-value="true"
+            > File
+            </input>
+          </label>
+        </div>
+        <div class="form-group" ng-init="dataChanged()" ng-if="!showFile">
           <textarea ng-model="$parent.data" ng-change="$parent.dataChanged()" rows="4" cols="50" name ="message" id="plainText" class="form-control" placeholder="Enter text you want to encode..."></textarea>
         </div>
-         
-        <div class = "form-group" ng-if="showFile">
-          <button class="btn btn-default" ngf-select ngf-change="newUpload($file)" ngf-max-size="50KB" name="file" ngf-multiple="false">Select File</button>
-        </div>
         
-        <div class="float-right">
-          <label ng-if="data">Input Size (Bits):</label>
+        <div class = "form-group" ng-if="showFile">
+          <div class="alert alert-info" ng-if="!file && !form.file.$error.maxSize" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Info</span>
+            Please upload a file
+          </div>
+          <div class="alert alert-danger" ng-if="form.file.$error.maxSize" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            File size too large
+          </div>
+          <div class="alert alert-success" ng-if="form.file.$valid || file.name" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Success:</span>
+            {{file.name}} uploaded successfully
+          </div>
+          <button class="btn btn-default"
+            ngf-select 
+            ngf-change="newUpload($file)"
+            ng-init = "initFiles($file)"
+            ngf-max-size="50KB" 
+            name="file"
+            ngf-multiple="false"
+            ng-required="true"
+            ng-model="$parent.file"
+            >
+              Select File
+          </button>
+          <div ngf-src="$parent.file"></div>
+          
+        </div>
+          
+        <div ng-if="(data && !showFile) || (file && showFile)" class="float-right">
+          <label>Input Size (Bits):</label>
           <p class="inline">{{size}}</p>
         </div>
         <label>Compression Method:</label>
@@ -144,7 +172,7 @@
           
             <div class="row">
               <div class="col-md-12">
-                <a href="files/{{filename}}" class="btn btn-primary">
+                <a href="tmp/output/{{filename}}" download="{{method}}Encoding.bin" class="btn btn-primary">
                   Download Encoding
                 </a>
               </div>
